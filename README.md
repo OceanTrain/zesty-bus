@@ -11,26 +11,20 @@ TODO
 
 ## 🐧 Dependancies
 
-* npm
 * cargo
 
 ## ⬇️ Install
 
 ```
-cargo install wasm-pack
 git clone https://github.com/OceanTrain/zesty-bus.git
-cd zesty-bus/www
-npm install
-cd ..
+cd zesty-bus
 ```
 
 
-## 🛠️ Build
+## 🛠️ Build and Run
 
 ```
-wasm-pack build
-cd www
-npm run start
+cargo run
 ```
 
 Then go to a browser and type `localhost:8080` into the url
@@ -38,5 +32,5 @@ Then go to a browser and type `localhost:8080` into the url
 ### 🔬 Testing
 
 ```
-wasm-pack test --headless --firefox
+cargo test
 ```

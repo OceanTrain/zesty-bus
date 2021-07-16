@@ -1,0 +1,1422 @@
+
+
+ROOM [init] {
+^+++good^
+Type in an action and an object to perform the action. The actions available to you are #go#, #talk#, #examine#, #use#, and #take#. To move, type #go# and the cardinal direction, ie. #go west#. Type #examine room# for a description of the room you are currently in, and type #inventory# to view your current inventory. Type #help# to see this again.
+|BREAK|
+<sounds/BGM/diningAmb.mp3>
+"Would you like another glass of water?” You blink out of your thoughts and look over to the waiter standing next to the table. He looks at you expectantly, waiting for a reply. (#Yes#, #No#) 
+^++init^
+^++no_answer^
+} 
+HELP [help] {
+    Type in an action and an object to perform the action. The actions available to you are #go#, #talk#, #examine#, #use#, and #take#. To move, type #go# and the cardinal direction, ie. #go west#. Type #examine room# for a description of the room you are currently in, and type #inventory# to view your current inventory. Type #help# to see this again.
+}
+MISC [yes] &init& &no_answer& {
+You nod your head and give him a weak smile. He reaches over and, plucking your glass from the table, says “You’re still looking a little green around the gills, it’s quite common for those who haven’t ridden on a subrail before. It might help to lay down for a bit while your body adjusts to the depth.” He sets down your now full glass in front of you and with a smile departs, exiting through the West door labeled "Staff Only".
+*sounds/SFX/glassFilled.mp3*
+^++full_glass^
+|BREAK|
+Leaning back in your chair, you let your eyes wander across your surroundings. On the well worn table in front of you sits your #glass#, and on the wall beside you is a small #poster#. A few tables away sits an old #man# engrossed in his writing, and at the other end of the car is a young #woman#. There is a door to the #East# side of the car that leads to the passenger sleping quarters. 
+^--no_answer^
+} 
+MISC [no] &init& &no_answer& {
+You shake your head and he smiles politely at you saying, “Let me know if you change your mind. You’re still looking a little green around the gills, it’s quite common for those who haven’t ridden on a subrail before. It might help to lay down for a bit while your body adjusts to the depth.” With a smile he departs, exiting through the West door labeled "Staff Only".
+|BREAK|
+Leaning back in your chair, you let your eyes wander across your surroundings. On the well worn table in front of you sits your #glass#, and on the wall beside you is a small #poster#. A few tables away sits an old #man# engrossed in his writing, and at the other end of the car is a young #woman#. There is a door to the #East# side of the car that leads to the passenger sleeping quarters. 
+^--no_answer^
+}
+
+
+EXAMINE [glass] &init& {
+Looking at the glass, your nausea takes over again. You wish it was full.
+	}
+EXAMINE [glass] &init& &full_glass& {
+In the glass before you, the water's surface ripples with the movement of the train. The slow and steady swaying reminding you of how far you are from home.
+}
+USE [glass] &init& {
+You twirl the empty glass on the table.
+}
+USE [glass] &init& &full_glass& {
+You pick up the glass and drink the water, the coolness of it diminishing your nausea. 
+^--full_glass^
+}
+TAKE [glass] &init& {
+Although the glass is nice, you don't see a reason you need to take it with you. 
+}
+
+EXAMINE [room] &init& {
+The dining car is well lit with warm electric lighting that reflects off the polished wood tables and chairs. To one side is a couple of armchairs and a settee with a low table where one might chat or play a hand of cards. Further down lies the bar; closed at this late hour. The rest of the room is filled with dining tables, only two of which are occupied; one by an older #man# and another by a young #woman#. To the #East# is a door leading to the passenger sleeping quarters.
+}
+EXAMINE [poster] &init& {
+The poster announces in large black letters, “Welcome Aboard the Transatlantic Suboceanic Rail! The safest way to cross the depths of the ocean.”
+}
+EXAMINE [man] &init& {
+The older man sits hunched over his table, engrossed in his writing. Looking closer, you can see that his once respectable suit now shows signs of considerable wear with patches haphazardly sewn on and stains decorating the surface. As he writes, he mutters under his breath and, although he pauses to drink his coffee, his eyes never stray from the pages in front of him.
+*sounds/SFX/hmm.mp3*
+}
+TALK [man] &init& {
+Approaching the man, you begin to speak but he stops you waving his hands and saying, “No, no, no, I can’t be bothered right now, I’ve almost solved it.”
+}
+EXAMINE [woman] &init& {
+The young woman sits alone at a table, an untouched cup of tea next to her. She’s wearing a pale blue dress of fine quality and you can see that she has soft hands, the kind that have never seen a hard day of labour. She stares vacantly at the room, her mind seemingly far away.
+}
+TALK [woman] &init& {
+You approach the young woman and greet her. She turns to you but her expression remains distant. 
+
+“Can you feel it? Something is coming, something...dark.”
+
+Shifting her gaze back to the room, she goes silent once more, lost in her own thoughts. 
+}
+GO [east] &init& {
+You leave the dining room heading East into the hallway of the sleeper car and then into your own room.
+	*sounds/SFX/doorHeavy.mp3*
+[[your_room]] 
+}
+GO [west] &init& {
+You cannot go into the kitchen, only the staff are permitted there. 
+}
+
+ROOM [your_room] %good% {
+<sounds/BGM/trainAmb.mp3>
+Your room is furnished in a practical fashion. Pushed against the wall is your #bed#, across from it is a small desk and on the wall hangs a tall #mirror#.
+^++your_room^
+}
+ROOM [your_room] %bad% {
+You're drifting in the darkness. Fragments of your thoughts gently swirl around you, mixing and separating with no rhyme or reason. You feel a weight on your chest beginning to pull you down. Everything begins to swirl faster and faster until it is an indistinguishable blur. You are falling...
+|BREAK|
+*sounds/cinematic/nightmare.mp3*
+|DELAY 24000|
+With a start, you wake. You open your bleary eyes and blink up at the ceiling, your mind still groggy. As the fogginess of sleep fades, you notice the room is darker than it should be. The emergency lighting is on. 
+
+Unease knots your stomach and getting up quickly, you slip on your shoes. Standing there you look around trying to figure out what it was that awoke you, and then it hits you. It's silent, the train is not moving.  
+|BREAK|
+Something else seems out of place and you trust your instincts when they tell you that there is more going on here than just a mechanical failure.
+^++your_room^
+}
+ROOM [your_room] &your_room& %good% {
+Your room is furnished in a practical fashion. Pushed against the wall is your #bed#, across from it is a small desk and on the wall hangs a tall #mirror#.
+}
+ROOM [your_room] &your_room& %good% %nogo_your_room% {
+Your room looks as it did before this whole nightmare began. Pushed against the wall is your #bed#, across from it is a small desk, and on the wall hangs a tall #mirror#.
+^---nogo_your_room^
+}
+EXAMINE [room] &your_room& %good% {
+Your room is furnished in a practical fashion. Pushed against the wall is your #bed#, across from it is a small desk and on the wall hangs a tall #mirror#.
+}
+EXAMINE [bed] &your_room& %good% {
+The bed is neatly made with the sheets and blanket tucked in at each corner. Although simple, it has a comfortable quality that can’t be found in a new bed.  
+}
+EXAMINE [bed] &your_room& %bad% {
+The bed is rumpled from your sleep. The blanket bunched and twisted from your movements and the pillow indented from where your head rested. 
+}
+USE [bed] &your_room& %bad% {
+The unease you feel makes the prospect of sleep impossible. 
+}
+USE [bed] &your_room& %good% {
+You take the waiter’s advice and decide to lay down for a bit now that your stomach is feeling more settled. Taking your shoes off, you lay down on your bed, planning to only close your eyes for a minute. Soon though, you feel the pull of sleep and drift off.
+|BREAK|
+<sounds/BGM/basicAmb.mp3>
+^---good^
+^+++bad^
+^--your_room^
+[[your_room]]
+}
+EXAMINE [mirror] &your_room& %good% {
+The mirror is simply adorned, but it’s height and level surface allow you to examine your outfit from head to toe when you desire. 
+}
+USE [mirror] &your_room& %good% {
+Looking in the mirror, your reflection stares back at you with tired eyes.
+}
+EXAMINE [room] &your_room& %bad% {
+In the dim lighting you can see your desk to one side and your #bed# across from it. Hanging on the wall is your full length #mirror#.  
+}
+EXAMINE [mirror] &your_room& %bad% {
+You walk to the mirror and as you near it, you notice something wrong. Initially, you disregarded the darkness of it's reflection because of the dim lighting but as you stare at it you can barely make out anything. It takes a moment but then you realize the mirror shows everything but your own reflection. 
+|BREAK|
+Without thinking, you reach out your hand to touch its surface. Your hand doesn't rest on the surface like you expected, rather it begins to pass through it. Shock and wonder fill your mind until something grabs you and pulls you through.
+|BREAK| 
+*sounds/cinematic/mirrorEnter.mp3*
+|DELAY 7000|
+<sounds/BGM/mirrorAmb1.mp3>
+You've fallen to your knees and as the darkness recedes from your vision and you can see that you are in your room...and yet you are not. The desk and bed are on opposite sides, and what looks like tar covers the ceiling and bleeds down the walls. Behind you is the mirror and through it you see your real room, it's dim emergency lighting just barely illuminating your surroundings. Returning your attention to the inky black liquid, you see that it has now reached the floor and is oozing towards you. 
+|BREAK|
+As it gets closer, you back away step by step not taking your eyes off it. The light begins to fade and, glancing behind, you see that the liquid has begun to cover the mirror. In a split second, you make your decision and lunge through mirror, barely avoiding the reaching tendrils of darkness. 
+|BREAK| 
+*sounds/cinematic/mirrorScareC1.mp3*
+|DELAY 27000|
+[[sleeper_car_west]]
+}
+
+
+ROOM [sleeper_car_west] %bad% {
+As you catch your breath, you look around. You're in the hallway of the sleeper car and, like your room, it is bathed in emergency lighting. Maybe one of the staff or another passenger knows what is going on, but there is no sign of anyone else. To the #west# is the door leading to the dining room. #North#, across the hall from your room, is the sleeping quarters of a young man you've seen in passing. And to the #east# stretches the rest of the sleeper car. 
+^++sleeper_car_west^
+}
+ROOM [sleeper_car_west] &sleeper_car_west& %bad% {
+You are on the far west end of the sleeper car. To the #west# is the door to the dining room, and to the #north# are the sleeping quarters of another passenger, a young man. To the #east# stretches the rest of the sleeper car. 
+}
+ROOM [sleeper_car_west] &sleeper_car_west& %good% {
+You are on the far west end of the sleeper car. To the #west# is the door to the dining room, and to the #north# are the sleeping quarters of another passenger, a young man. Your own room is through the door to your south, and to the #east# stretches the rest of the sleeper car.
+}
+GO [north] &sleeper_car_west& {
+[[lover_boi]]
+}
+GO [south] &sleeper_car_west& %bad% {
+Staring at the door to your room you can't bring yourself to enter it, the fear of what could be waiting on the other side stops you. 
+}
+Go [south] &sleeper_car_west& %good% {
+	[[your_room]]
+}
+GO [east] &sleeper_car_west& {
+[[sleeper_car_middle]]
+}
+GO [west] &sleeper_car_west& %bad% {
+The door doesn't budge when you tug on it. A sign on it reads, "In case of emergency this door will seal until power is restored." You bang on the door hoping someone on the other side will hear you, but there is no response. 
+}
+GO [west] &sleeper_car_west& %good% {
+[[dining_car]]
+}
+
+ROOM [sleeper_car_middle] {
+You are midway down the car. There is only one door #south# of you leading to another passenger's quarters.
+^++sleeper_car_middle^
+}
+ROOM [sleeper_car_middle] &sleeper_car_middle& {
+You are midway down the car. There is only one door #south# of you leading to another passenger's quarters.
+}
+GO [south] &sleeper_car_middle& {
+[[old_man_reg]]
+}
+GO [east] &sleeper_car_middle& {
+[[sleeper_car_east]]
+}
+GO [west] &sleeper_car_middle& {
+[[sleeper_car_west]]
+}
+
+ROOM [lover_boi] {
+You enter a room almost identical to your own and the bed looks as though someone had just been sleeping in it. You wonder where they are at this hour, perhaps gone to the dining car. The only other evidence of the room's occupant is a #book# lying on the desk and a pair of #shoes# beside the bed.
+^++lover_boi^
+}
+ROOM [lover_boi] &lover_boi& {
+You enter a room almost identical to yours and void of any possessions except a #book# on the desk and a pair of #shoes# discarded beside the bed. 
+}
+GO [south] &lover_boi& {
+[[sleeper_car_west]]
+}
+EXAMINE [book] &lover_boi& {
+You open the book and discover it is the young man's diary. The most recent entry reads, "Diane and I managed to sneak away from her overbearing mother for a few minutes before we boarded the train. There is nowhere else I would rather be than with her. She gave me the key to our future and tomorrow night I'll finally have a chance to sneak through kitchens to see her. Until then I will keep it safe within my soul, my soul that belongs to her ~forever~."
+^++book^
+}
+TAKE [book] &lover_boi& {
+Although your curiosity demands you take the book with you, your conscience can't justify taking something so personal. 
+}
+EXAMINE [shoes] &lover_boi& {
+From a distance, the shoes look almost worn through to the bottom and their grimy appearance dissuades you from taking a closer look. 
+}
+TAKE [shoes] &lover_boi& {
+The shoes aren't your style or size. You decide against taking them with you. 
+}
+
+ROOM [old_man_reg] {
+Opening the door, you step into the room. Although it is twice the size of yours, it is much more cramped. Boxes large and small cover the floor, and there is no sign of the room's occupant. Papers yellowed with age and wires long bent out of shape peek out from under their lids. A lone #desk# sits in the corner and against the wall is a bed with a side #table# next to it. Tucked in another corner stands a tall #mirror# of fine quality.
+^++old_man_reg^
+}
+ROOM [old_man_reg] &old_man_reg& {
+The large room is cramped with boxes. A lone #desk# sits in the corner and against the wall is a bed with a side #table# next to it. Tucked in another corner stands a tall #mirror# of fine quality. The door to the hallway sits closed, #north# of you. 
+}
+EXAMINE [room] &old_man_reg& {
+Although the room is twice the size of yours, it is much more cramped. Boxes large and small cover the floor. Papers yellowed with age and wires long bent out of shape peek out from under their lids. A lone #desk# sits in the corner and against the wall is a bed with a side #table# next to it. Tucked in another corner stands a tall #mirror# of fine quality, and to your north sits the door to the hallway.
+}
+EXAMINE [desk] &old_man_reg& {
+On the desk sits a number of piles of #paper#, almost all of which is written in poor handwriting. Among the papers sits a device that resembles a strangely designed #lantern#.
+}
+EXAMINE [table] &old_man_reg& {
+On the side table sits the picture of a young woman smiling at the camera. The frame is worn around the edges as though it has been held frequently, and engraved below the image is the name, "Francine".
+}
+GO [north] &old_man_reg& {
+[[sleeper_car_middle]]
+}
+GO [north] &old_man_reg& %bad% $lantern_off$ {
+Deciding to risk the hallway, you open the door. Staring back at you is the darkness you fear and when it lunges at you, you are helpless to avoid it.
+*sounds/cinematic/death.mp3*
+[[gameover]]
+}
+EXAMINE [mirror] &old_man_reg& %bad% {
+The mirror seems normal but, like your own, you can't see your reflection in it. Although this one doesn't seem as menacing, you are wary to approach it. 
+}
+EXAMINE [mirror] &old_man_reg& %good% {
+The mirror sits in the corner looking like any other, and in it you can see your own reflection and that of the room.
+}
+USE [mirror] &old_man_reg& %good% {
+Standing in front, you place your hand on its surface assuring yourself it has returned to normal. Your reflection stares back at you and you wonder whether this nightmare will soon be over. 
+}
+USE [mirror] &old_man_reg& %bad% {
+The memory of what happened last time you got too close to a mirror flashes through your mind, stopping you from walking closer. 
+}
+USE [mirror] &old_man_reg& %bad% &lantern& {
+Your desire to live outweighs your fear of the mirror and you quickly walk toward it, only hesitating for a moment before plunging through. 
+|BREAK|
+*sounds/cinematic/mirrorEnter.mp3*
+|DELAY 7000|
+[[old_man_mirror]]
+}
+EXAMINE [mirror] &old_man_reg& %bad% &lantern& {
+The thought of going near another of the strange mirrors is one you don't like, but you are out of time. The #mirror# sits there, an open door waiting... 
+}
+
+EXAMINE [paper] &old_man_reg& {
+*sounds/SFX/paper.mp3*
+The topmost paper has a news article attached to it whose headline reads, "Mysterious Disappearances Blamed on Errors in Passenger Manifests". The writing on the paper that you can make out reads, "...have stopped investigating as the costs were ruled excessive when no definitive evidence could be produced proving the disappearances occurred while the journey was underway. My own independent inquiries have unearthed that this is indeed not the case. They simply choose to ignore the evidence before them, dismissing it as supernatural nonsense..."
+}
+TAKE [paper] &old_man_reg& {
+The paper is clearly part of a larger project and, being unable to read much of it, you decide to leave it where it is. 
+}
+EXAMINE [lantern] &old_man_reg& {
+What looks to be lantern sits on the desk among the papers. It has a tag on it that reads, "Paranormal Illumination Torch". On the back is scrawled, "Idea was sound, but testing has indicated it is unlikely to work."
+}
+TAKE [lantern] &old_man_reg& %bad% {
+You flick the power switch to ON, but nothing happens. Deciding there is no reason to carry around a broken lantern, you leave it where it is. 
+|BREAK|
+<sounds/BGM/tensionAmb.mp3>
+As you turn away from the lantern, a sudden chill runs down your back and dread curls in your stomach. You can feel the dark presence from your mirror, it has returned and is getting closer. The feeling of unease is coming from the direction of the hallway. With no other doors to escape through, you need to find somewhere to hide.
+^++lantern^
+}
+TAKE [lantern] &old_man_reg& %good% {
+You flick the power switch back and forth, but nothing happens. Deciding there is no reason to carry around a broken lantern, you leave it where it is. 
+}
+ROOM [old_man_mirror] {
+Emerging on the other side, you quickly press yourself flat against the wall beside the mirror, out of view from the other side. All is silent as you feel the ominous presence get closer and closer, until you hear the whisper of a door sliding open.
+|BREAK|
+*sounds/SFX/doorLight.mp3*
+|DELAY 2000|
+It feels like an eternity, you stand there not even daring to breathe. But soon you hear the door slide shut with a click and the oppressive feeling begins to fade until it is completely gone. 
+|BREAK|
+*sounds/SFX/doorLight.mp3*
+|DELAY 2000|
+<sounds/BGM/mirrorAmb.mp3>
+Taking a deep breath, you examine your surroundings. The room is a mirror image of the other, but what catches your attention is the light emanating from the #desk#. It's the #lantern#, it's glowing...
+^++old_man_mirror^
+}
+ROOM [old_man_mirror] &old_man_mirror& {
+The room is a mirror image of the other. A lone #desk# sits in the corner and against the wall is a bed with a side #table# next to it. Behind you stands the #mirror# you passed through.
+}
+EXAMINE [paper] &old_man_mirror& {
+*sounds/SFX/paper.mp3*
+The article attached to the paper reads, "Train Companies Deny any Wrongdoing". The writing on the paper that you can make out reads, "...are fools to stop investigating. Their unwillingness to see the evidence before them and intervene led has led to more and more disappearances. I know Francine would not have left me as everyone says, we loved each other. Something took her away and when I find out who or what it was there will be hell to pay..."
+}
+
+EXAMINE [lantern] &old_man_mirror& {
+The strange lantern looks as it did before, except now it casts a warm glow across the room. Picking it up you look at the wires coming out of it, none of them are attached and you can't figure out how it is being powered.
+} 
+TAKE [paper] &old_man_mirror& {
+The paper is clearly part of a larger project and, being unable to read much of it, you decide to leave it where it is. 
+}
+TAKE [lantern] &old_man_mirror& {
+Flicking the power switch to OFF, you pick up the lantern.
+*sounds/SFX/lanternUse.mp3*
+*sounds/SFX/lanternPickup.mp3*
+^+lantern_off^
+^++lantern_taken^
+}
+EXAMINE [desk] &old_man_mirror& {
+On the desk sits a number of piles of #paper#, almost all of which is written in poor handwriting. Among the papers sits a glowing device that resembles a strangely designed #lantern#.
+}
+EXAMINE [desk] &old_man_mirror& &lantern_taken& {
+On the desk sits a number of piles of #paper#, almost all of which is written in poor handwriting.
+}
+EXAMINE [table] &old_man_mirror& {
+On the side table sits a picture in which an old married couple smile at the camera holding hands. The engraving in the frame reads, "Francine & Elijah". 
+}
+EXAMINE [mirror] &old_man_mirror& {
+Tucked in the corner stands a tall #mirror# of fine quality, through it you can see the room you came from.
+}
+USE [mirror] &old_man_mirror& {
+[[old_man_reg]]
+}
+USE [lantern] $lantern_off$ {
+^-lantern_off^
+You turn the lantern ON with a click and a steady warm glow illuminates the space around you. 
+*sounds/SFX/lanternUse.mp3*
+^+lantern_on^
+}
+USE [lantern] $lantern_on$ {
+^-lantern_on^ 
+With a flick of your wrist you turn the lantern OFF. *sounds/SFX/lanternUse.mp3*
+^+lantern_off^
+}
+USE [lantern] $lantern_on$ &storage_car& %bad% {
+^-lantern_on^
+With a flick of your wrist you turn off the lantern, plunging yourself into darkness. The unforgiving blackness consumes you. 
+*sounds/SFX/lanternUse.mp3*
+*sounds/cinematic/death.mp3*
+[[gameover]]
+}
+EXAMINE [lantern] $lantern_on$ {
+The strange lantern is currently turned ON and casts a warm glow over your surroundings.
+}
+EXAMINE [lantern] $lantern_off$ {
+The strange lantern is currently turned OFF.
+}
+
+ROOM [sleeper_car_east] {
+Moving down the car, the rest of the doors you try are locked. At the end of the hallway, the door to the storage car lies #east# of you.
+^++sleeper_car_east^
+}
+
+ROOM [sleeper_car_east] &sleeper_car_east& {
+At the end of the hallway, the door to the storage car lies #east# of you, and the rest of the hallway stretches out in the opposite direction.
+}
+ROOM [sleeper_car_east] &sleeper_car_east& %nogo_east% {
+Stepping into the hallway of the sleeper car, you can see that all the power has turned on here as well. The door to the storage car lies #east# of you, and the rest of the hallway stretches out in the opposite direction.
+^---nogo_east^
+}
+
+GO [west] &sleeper_car_east& {
+[[sleeper_car_middle]]
+}
+
+GO [east] &sleeper_car_east& %bad% {
+The door to the storage car has a sign that reads, "Staff Only" and below it, "Note: Do not block door, breaker box must be accessible in case of emergency." You open the door and gaze into the storage room. Darkness stares back at you. With no light to see by, you decide against wandering around in the dark. 
+}
+GO [east] &sleeper_car_east& %good% {
+[[storage_car]]
+}
+GO [east] &sleeper_car_east& %bad% $lantern_on$ {
+[[storage_car]]
+}
+
+
+ROOM [storage_car] %bad% {
+Taking a deep breath, you gather your courage and step through the doorway. Your lantern casts a halo of light around you as you step into the storage room. You can just make out the vague outlines of various boxes and trunks, and at the back you can see the #breaker# box glinting in the lantern light.
+^++storage_car^
+}
+ROOM [storage_car] &storage_car& %bad% {
+Your lantern casts a halo of light around you as you step into the storage room. You can just make out the vague outlines of various boxes and trunks, and at the back you can see the #breaker# box glinting in the lantern light.
+}
+GO [west] &storage_car& {
+^--storage_car^
+^++sleeper_car_west^
+[[sleeper_car_west]]
+}
+
+EXAMINE [breaker] &storage_car& %bad% {
+The outside of the breaker box reads "DANGER: ELECTRICAL HAZARD. Authorized Personnel Only." Inside the box sits the breaker. It's a large switch and is currently set to OFF.
+}
+USE [breaker] &storage_car& %bad% {
+You grab the breaker by the handle and switch it to ON.
+|BREAK|
+*sounds/SFX/breaker_and_light_ON.mp3*
+^---bad^ ^+++good^
+^--storage_car^
+^+++nogo_east^
+^+++nogo_your_room^
+[[storage_car]]
+}
+ROOM [storage_car] %good% {
+The electricity flickers on and overhead lights bathe the world around you in a comforting glow. As the darkness retreats you feel the lantern in your hand getting lighter and, looking down at it, you watch it disappear like a distant memory. 
+
+When the power came on, you could hear the clunk of the dining car door unsealing. Looking around, you can now clearly see the various boxes and trunks in the storage car, and to the #west# lies the door to the sleeper car. 
+^-lantern_on^
+^++storage_car^
+}
+ROOM [storage_car] %good% &storage_car& {
+Around you sit various trunks and boxes, to the #west# lies the door to the sleeper car.
+}
+ROOM [gameover] { 
+You have died.
+}
+ROOM [dining_car] {
+	<sounds/BGM/emergencyLights.mp3>
+Passing through the doorway, you enter the dining car. Emergency lighting bathes the room; it seems like a lifetime ago that you were here. A number of small dining #tables# fill the room, and at the far end sits a #bar# and small #lounge# area. The door from which you entered lies to the #east#, and on the far #west# end of the car is a door labeled "Staff Only". On the wall hangs a large #mirror# set in a simple brass frame. ^++dining_car^
+^++dining_car^
+}
+ROOM [dining_car] &dining_car& {
+You have entered the #dining car#. 
+}
+EXAMINE [room] &dining_car& {
+The emergency lighting casts long shadows across the empty dining car. A number of small dining #tables# fill the room and across them are the scattered belongings of recent occupants. At the far end sits a #bar# and small #lounge# area. To the #east# is the door to the sleeping car and to the far #west# is a door labeled "Staff Only". On the wall hangs a large #mirror# set in a simple brass frame.
+}
+
+ROOM [dining_car] &dining_car& %breaker1% %breaker2% %nogo_b2_dining% {
+	<sounds/BGM/lights.mp3>
+You enter the #dining car#, the warm lights overhead giving the room a more welcoming feeling. Although the power has been restored the lights still occasionally flicker.
+---nogo_b2_dining
+}
+EXAMINE [room] &dining_car& %breaker1% %breaker2% {
+	<sounds/BGM/lights.mp3>
+Warm light fills the room, occasionally flickering. A number of small dining #tables# fill the room and across them are the scattered belongings of recent occupants. At the far end sits a #bar# and small #lounge# area. To the #east# is the door to the sleeping car and to the far #west# is a door labeled "Staff Only". On the wall hangs a large #mirror# set in a simple brass frame.
+}
+
+GO [west] &dining_car& {
+	*sounds/SFX/doorLight.mp3*
+You head through the door to the west labelled "Staff Only".[[kitchen]]
+}
+GO [east] &dining_car& {
+	*sounds/SFX/doorLight.mp3*
+You head east through the door to the sleeper car
+[[sleeper_car_west]]
+}
+
+
+EXAMINE [mirror] &dining_car& {
+The #mirror# takes up most of the wall and is set in a simple brass frame. The room is reflected in the mirror but, like before, your reflection is missing.
+}
+USE [mirror] &dining_car& {
+Moving towards the mirror, you stretch out your hand. It meets no resistance, and you step through to the other side.
+
+}
+EXAMINE [mirror] &dining_car& %breaker1% %breaker2% {
+The mirror takes up most of the wall and is set in a simple brass frame. You can see yourself in the mirror, as well as the rest of the room.
+}
+USE [mirror] &dining_car& %breaker1% %breaker2% {
+You reach out your hand letting it rest on the mirror. You push on it, but it is cold and unyielding beneath your fingers. 
+*sounds/cinematic/mirrorEnter.mp3*
+}
+EXAMINE [bar] &dining_car& {
+The varnished wood of the bar reflects the dim emergency lighting. The bar stools that would normally be full at this hour sit empty.  A #menu# lays discarded on the counter, along with an empty #bottle#. 
+}
+EXAMINE [menu] &dining_car& {
+The menu is simple but elegant. Flipping it open you read, “The Trans-Atlantic Meatloaf: Enjoy our famous meatloaf made from the finest meat substitutes and topped with our secret sauce!” 
+*sounds/SFX/paper.mp3*
+}
+TAKE [menu] &dining_car& {
+With no one to take your order, you don't see a point in taking the menu. 
+}
+EXAMINE [bottle] &dining_car& {
+The tall green bottle sits empty and alone atop the counter. Turning it around, you notice that the label is peeling off like a sticker that has been reapplied one too many times.
+*sounds/SFX/juddSetDown.mp3*
+}
+TAKE [bottle] &dining_car& {
+An empty bottle doesn't hold the same appeal as a full one. You leave it where it is. 
+}
+USE [bottle] &dining_car& {
+You pick up the empty bottle blowing air over its opening but no noise is made. You aren't very good at that.
+*sounds/SFX/useBottle.mp3*
+}
+
+EXAMINE [lounge] &dining_car& {
+The lounge is tucked into the corner of the dining car. Big comfy green chairs and couches fill the area, and in the center is a table with #cards# discarded upon it. Draped over one of the chairs is a simple brown #coat#. 
+}
+EXAMINE [cards] &dining_car& {
+The cards on the table reveal a high-stakes Go Fish game. The players look to be very evenly matched, with each player only a card away from winning.
+}
+TAKE [cards] &dining_car& {
+You would rather not interfere with such a high-stakes game.
+}
+EXAMINE [coat] &dining_car& {
+The coat is draped over one of the lounge chairs and sticking out of the pocket is a piece of paper. It looks to be a page out of the subrail's employee handbook, and on one side it reads, "Tip: To remember difficult passwords such as I9P3C5, use a mnemonics such as Irish9People3Cool5”. On the other side is a bunch of illegible handwriting.
+*sounds/SFX/paper.mp3*
+}
+EXAMINE [tables] &dining_car& {
+You look over the abandoned belongings scattered across the tables. Most are quite mundane, but on one table is a #napkin# with a drawing of a key, and on another are some #papers# that look a design for some kind of device.
+}
+
+EXAMINE [napkin] &dining_car& {
+On the napkin is life-like drawing of a small key.
+}
+EXAMINE [papers] &dining_car& {
+The blueprints detail the making of a small magnet. As far as you can tell, the design only requires a piece of metal to be wrapped in wire which is then charged by some sort of small generator. 
+}
+ROOM [dining_car_mir] {
+	<sounds/BGM/mirrorAmb2.mp3>
+Like the other dining room, a number of small dining #tables# fill the room, and at the far end sits a #bar# and small #lounge# area. The door to the sleeper car is to the #east# and the door labelled "Staff Only" is to the #west#. The #mirror# remains unchanged as it hangs from the wall. 
+^++dining_Car_mir^
+}
+ROOM [dining_car_mir] &dining_car_mir& {
+	<sounds/BGM/mirrorAmb2.mp3>	
+You have entered the dining car in the mirror. 
+}
+EXAMINE [room] &dining_car_mir& {
+	<sounds/BGM/mirrorAmb2.mp3>
+The emergency lighting is dim and casts long shadows across the deserted car. A number of small wooden dining #tables# fill the room and on them are the scattered belongings of their recent occupants. At the far end sits a #bar# and small #lounge# area. To the #east# is the door to the sleeping car and to the far #west# is a door labeled "Staff Only". On the wall hangs a large #mirror# set in a simple brass frame.
+}
+
+
+GO [west] &dining_car_mir& {
+You try to open the door on the west side of the car but it doesn't budge. It is almost as if it’s part of the wall.
+}
+GO [east] &dining_car_mir& {
+You pull on the door, but to no avail. It is almost as if it's part of the wall.
+}
+
+
+
+EXAMINE [mirror] &dining_car_mir& {
+The mirror hangs on the wall in its unadorned brass frame, and through it you can see the other dining car.
+}
+USE [mirror] &dining_car_mir& {
+	*sounds/cinematic/mirrorEnter.mp3*
+Reaching out your hand, you watch it disappear into the mirror before stepping through.
+}
+EXAMINE [bar] &dining_car_mir& {
+The bar sits empty under the dim lighting, the polished surface looking dull and lifeless. A #menu# lays discarded on the counter, and beside it sits a tall #bottle# of alcohol. 
+}
+EXAMINE [bar] &dining_car_mir& $bottle$ {
+The bar sits empty under the dim lighting, the polished surface looking dull and lifeless, and a #menu# lays discarded on the counter.
+}
+EXAMINE [bottle] &dining_car_mir& {
+The bottle is full of...something. You are unable to identify the pungent liquid, and the slanted handwriting on the label reads ~Judd~.
+}
+TAKE [bottle] &dining_car_mir& {
+You pick up the #bottle# of mysterious liquid deciding to take it with you.
+*sounds/SFX/juddSwish.mp3*
+^+bottle^
+^+++bottle^
+}
+EXAMINE [bottle] $bottle$ %bottle% {
+The bottle is full of...something. You are unable to identify the pungent liquid, and the slanted handwriting on the label reads ~Judd~.
+}
+USE [bottle] &dining_car_mir& {
+With a bit of trepidation, you open the bottle and take a whiff. Your eyes begin to water, but you will not be deterred. You tip the bottle back and let it race down your throat like liquid fire. Your heart begins to pound, racing faster and faster before it explodes in your chest, this was not a good idea... 
+	*sounds/cinematic/juddDrink.mp3*
+[[gameover]]
+}
+USE [bottle] $bottle$ %bottle% {
+With a bit of trepidation, you open the bottle and take a whiff. Your eyes begin to water, but you will not be deterred. You tip the bottle back and let it race down your throat like liquid fire. Your heart begins to pound, racing faster and faster before it explodes in your chest, this was not a good idea... 
+	*sounds/cinematic/juddDrink.mp3*
+[[gameover]]
+}
+EXAMINE [menu] &dining_car_mir& {
+	*sounds/SFX/paper.mp3*
+You take a look at the menu, it looks like it has seen better days.  The prices have been crossed out and much more expensive ones written in. The price of the meatloaf special has been almost tripled. 
+}
+TAKE [menu] &dining_car_mir& {
+The menu is barely readable, and is not worth carrying around.
+}
+EXAMINE [lounge] &dining_car_mir& {
+The lounge is tucked into the corner of the dining car. Upholstered green chairs and couches fill the area, and in the center is a table with playing #cards# discarded upon it. Draped over one of the chairs is a simple brown #coat#. 
+}
+EXAMINE [lounge] &dining_car_mir& $cards$ {
+The lounge is tucked into the corner of the dining car. Upholstered green chairs and couches fill the area, and draped over one of the chairs is a simple brown #coat#. 
+}
+EXAMINE [cards] &dining_car_mir& {
+The cards on the table reveal a high-stakes Go Fish game. However, strangely every single card is an ~Ace~.
+}
+EXAMINE [cards] $cards$ %cards% {
+All the cards in the deck look normal except that every single one of them is an ~ace~.
+}
+TAKE [cards] &dining_car_mir& {
+You decide to take the unusual deck of cards, putting them in your pocket. 
+*sounds/SFX/cards.mp3*
+^+cards^
+^+++cards^
+}
+EXAMINE [coat] &dining_car_mir& {
+	*sounds/SFX/coat.mp3*
+The coat is draped over one of the lounge chairs and sticking out of the pocket is a piece of paper. It looks to be a page out of the subrail's employee handbook, and on one side it reads, "Tip: To remember difficult passwords such as I9P3C5, use a mnemonics such as Irish9People3Cool5." On the other side is a bunch of illegible handwriting. 
+}
+
+
+
+
+EXAMINE [tables] &dining_car_mir& {
+You look over the abandoned belongings scattered across the tables. Most are quite mundane, but on one table is a small #key#, and on another are some #papers# that depict a design for some kind of device.
+}
+EXAMINE [tables] &dining_car_mir& $key$ {
+You look over the abandoned belongings scattered across the tables. Most are quite mundane, but on one table are some #papers# that depict a design for some kind of device.
+}
+TAKE [key] &dining_car_mir& {
+*sounds/SFX/keyPickUp.mp3*
+You pick up the key and slip it into your pocket.
+^+key^ ^+++key^
+}
+TAKE [key] &dining_car_mir& $key$ {
+You already have the key.
+}
+EXAMINE [key] &dining_car_mir& {
+Sitting on the table is a small key with strange symbols carved down its spine.
+}
+EXAMINE [key] $key$ %key% {
+	*sounds/SFX/keyPickUp.mp3*
+You pick up the key and slip it into your pocket.
+}
+EXAMINE [papers] &dining_car_mir& {
+The drawings on the papers depict a piece of metal wrapped in wire with what looks like electricity coursing through it. Most of the writing is illegible, but you can make out a note in the margins on one page that reads, "I'm so close to solving it. A little longer and I will finally be able to find her."
+}
+
+
+ROOM [kitchen] {
+	<sounds/BGM/emergencyLightsBubbling.mp3>
+The kitchen is even darker than the dining car and has a damp feeling. The entire west side of the room is shrouded in darkness. A dark substance has spread across the walls and ceiling obscuring the emergency lighting, but doesn't seem to be spreading any further. In the area that you can see, there is a huge #jar# in the corner of the room and a corkboard with a handwritten #note# on it to your right. On the south wall, there is another #mirror#.
+^++kitchen^
+}
+ROOM [kitchen] &kitchen& {
+You enter the #kitchen#.
+}
+EXAMINE [room] &kitchen& {
+The kitchen is even darker than the dining car and has a damp feeling. The entire west side of the room is shrouded in darkness. A dark substance has spread across the walls and ceiling obscuring the emergency lighting, but doesn't seem to be spreading any further. There is a #jar# in the corner, a #mirror# on the south wall, and a corkboard with a handwritten #note# on it.
+}
+
+ROOM [kitchen] &kitchen& %breaker1% {
+You have entered the #kitchen#.
+}
+ROOM [kitchen] &kitchen& %breaker1% %nogo_b1_kitchen% { 
+<sounds/BGM/emergencyLights.mp3>
+The dark substance covering the lights has been burned away letting the emergency lights illuminate the rest of the kitchen. To the #west# you can now see a door, likely connecting to the train car further ahead. There is a large #jar# sitting in the corner, a #mirror# on the wall, and a corkboard with a handwritten #note# on it. Next to the west door you can also see what looks like another #breaker#. 
+^---nogo_b1_kitchen^
+}
+EXAMINE [kitchen] &kitchen& %breaker1% {
+In the dim emergency lighting, you can see to the #west# is a door, likely connecting to the train car further ahead. There is a large #jar# sitting in the corner, a #mirror# on the wall, and a corkboard with a handwritten #note# on it. Next to the west door you can also see what looks like another #breaker#. 
+}
+
+ROOM [kitchen] &kitchen& %breaker1% %breaker2% {
+	<sounds/BGM/lights.mp3>
+The regular power has stuttered to life, but it still wavers occasionally reverting back to the dim emergency lighting. It is just strong enough that you can make out the faint hum of power emanating from the door, there must be just enough to allow the magnets to disengage. 
+}
+
+EXAMINE [room] &kitchen& %breaker1% %breaker2% {
+The regular lighting wars with the emergency lighting. In the wavering light you can see a door to the #west# likely leading to the cars ahead. There is a large #jar# sitting in the corner, a #mirror# on the wall, and a cork board with a handwritten #note# on it. 
+}
+
+GO [west] &kitchen& {
+With morbid curiosity, you step into the shroud of darkness. It gets colder and colder and you lose consciousness..
+*sounds/cinematic/darkEatsYou.mp3*
+|DELAY 15000|
+[[gameover]]
+}
+GO [west] &kitchen& %breaker1% {
+You try to pull open the door but, without power, it remains shut fast. 
+}
+GO [west] &kitchen& %breaker1% %breaker2% {
+	*sounds/SFX/keyUse.mp3*
+You slide open the unlocked door and step through to the next car.
+|BREAK|
+[[vip_men]]
+}
+GO [east] &kitchen& {
+[[dining_car]]
+}
+
+
+EXAMINE [jar] &kitchen& {
+The jar in the corner is absolutely massive, and full of what you guess to be the sub-rail's proclaimed “special sauce”. It’s so red...
+}
+
+TAKE [jar] &kitchen& {
+This jar is way too big to carry around with you.
+}
+
+USE [jar] &kitchen& {
+Normally you wouldn’t dip your hand into a jar of mystery sauce in a dark unfamiliar kitchen, but you find yourself doing just that. 
+|BREAK|
+*sounds/SFX/slurp.mp3*
+This red sauce...it tastes strangely familiar... 
+}
+EXAMINE [note] &kitchen& {
+In large messy handwriting the note reads, "brkpwd: 4a9k3j".
+}
+
+EXAMINE [mirror] &kitchen& {
+Another mirror without a reflection.
+}
+
+EXAMINE [mirror] &kitchen& %breaker2% {
+As the lighting wavers, you find that the mirror hasn't fully reverted back to normal. If you look closely, you can just make out the faint details of your own reflection.
+}
+
+USE [mirror] &kitchen& {
+You step through the mirror.
+|BREAK|
+*sounds/cinematic/mirrorEnter.mp3*
+[[kitchen_mir]]
+}
+
+USE [mirror] &kitchen& %breaker2% {
+You find passing through the mirror difficult; like walking through molasses. But with some perseverance, you manage to make it through.
+|BREAK|
+*sounds/cinematic/mirrorEnter.mp3*
+[[kitchen_mir]]
+}
+EXAMINE [breaker] &kitchen& %breaker1% {
+This breaker is almost identical to the one in the other kitchen.
+}
+EXAMINE [breaker] &kitchen& %breaker1% %breaker2% {
+The breaker has been unlocked and flipped on.
+}
+
+USE [breaker] &kitchen& %breaker1% {
+The breaker requires a password to be unlocked:
+}
+USE [breaker] &kitchen& &4a9k3j& %breaker1% {
+You flip the now unlocked breaker.
+|BREAK|
+*sounds/SFX/breaker.mp3*
+<sounds/BGM/lights.mp3>
+The lights in the kitchen flicker on a little brighter, but every now and then reverts back to the emergency lighting.
+^+++breaker2^
+}
+USE [breaker] &kitchen& &4a9k3j& %breaker1% %breaker2% {
+This breaker is already flipped on.
+}
+MISC [4a9k3j] &kitchen& %breaker1% {
+You enter the password in and hear the click of it unlocking. The breaker can now be flipped. 
+*sounds/SFX/unlockBreaker.mp3*
+^++4a9k3j^
+}
+MISC [4a9k3j] &kitchen& %breaker1% %breaker2% {
+The breaker is already unlocked. 
+} 
+
+ROOM [kitchen_mir] {
+	<sounds/BGM/mirrorAmb2.mp3>
+As you pause to look at the room around you, immediately you see that there is gunk and rotten food all over the walls. It smells absolutely foul in this kitchen, and each step you take you can hear and feel the dirty grime below your feet. There a large #jar# in the corner, the mirror hangs on the wall behind you, and on a corkboard hangs a handwritten #note#. This kitchen is not shrouded in darkness on the west side like its counterpart, and you see a #breaker# box along that wall.
+^++kitchen_mir^
+}
+ROOM [kitchen_mir] &kitchen_mir& {
+	<sounds/BGM/mirrorAmb2.mp3>
+You have entered the kitchen in the mirror.
+}
+EXAMINE [room] &kitchen_mir& {
+	<sounds/BGM/mirrorAmb2.mp3>
+It smells absolutely foul in this kitchen, and each step you take you can hear and feel the dirty grime below your feet. There a large #jar# in the corner, the mirror hangs on the wall behind you, and on a cork board hangs a handwritten #note#. This kitchen is not shrouded in darkness on the west side like its counterpart, and you see a #breaker# box along that wall.
+}
+
+
+GO [west] &kitchen_mir& {
+Although there is a visible door at the west side of this room, it does not function, it may as well be part of the wall.
+}
+GO [east] &kitchen_mir& {
+The door on the east side of this wall will not budge. In fact, the handle doesn’t even turn.
+}
+
+
+EXAMINE [jar] &kitchen_mir& {
+The huge jar is labelled ~ketchup~. This is their “special sauce”? 
+}
+
+TAKE [jar] &kitchen_mir& {
+This jar is much too heavy to move let alone take with you.
+}
+USE [jar] &kitchen_mir& {
+Even though you know that this is just a huge jar of ketchup, you find yourself scooping some up to eat. 
+|BREAK|
+*sounds/SFX/slurp.mp3*
+It tastes like ketchup.
+}
+EXAMINE [note] &kitchen_mir& {
+In large messy handwriting the note reads, "F--- corporate and their rules."
+*sounds/SFX/paper.mp3*
+}
+EXAMINE [mirror] &kitchen_mir& {
+Through the mirror you can see the other, much cleaner, kitchen.
+}
+
+USE [mirror] &kitchen_mir& {
+You step through the mirror.
+|BREAK|
+*sounds/cinematic/mirrorExit.mp3*
+[[kitchen]]
+}
+
+EXAMINE [breaker] &kitchen_mir& {
+The breaker sits on the wall just asking to be flipped, but it looks to need a password to be unlocked first.
+}
+
+EXAMINE [breaker] &kitchen_mir& %breaker1% {
+The breaker has been flipped and the power situation seems to have shifted, at least a little bit.
+}
+USE [breaker] &kitchen_mir& {
+The breaker requires a password to be unlocked:
+}
+USE [breaker] &kitchen_mir& &4ace9ketchup3judd& {
+You flip the now unlocked breaker. 
+|BREAK|
+*breaker_and_light_ON.mp3*
+You hear the sound of lights turning on in the distance, but the light in the kitchen don't change.
+^+++breaker1^
+}
+	
+USE [breaker] &kitchen_mir& &4ace9ketchup3judd& %breaker1% {
+This breaker is already flipped on.
+}
+MISC [4ace9ketchup3judd] &kitchen_mir& {
+You enter the password in and hear the telltale beep of it unlocking. The breaker can now be flipped.
+*sounds/SFX/unlockBreaker.mp3*
+^++4ace9ketchup3judd^ 
+}
+MISC [4ace9ketchup3judd] &kitchen_mir& %breaker1% {
+The breaker is already unlocked. 
+} 
+
+
+ROOM [vip_men] {
+	<sounds/BGM/emergencyLights.mp3>
+You stand on the far east end of the sleeper car of the wealthy and influential. A plush red carpet covers the floor, contrasting beautifully with the mahogany panelling of the walls. Dim emergency light stretches the length of the car, but only the odd lightbulb casts a glow; most aren't working.
+^++vip_men^
+}
+ROOM [vip_men] &vip_men& {
+You have entered a sleeping car where the rich and influential stay. 
+} 
+EXAMINE [room] &vip_men& {
+You stand on the far east end of the sleeper car of the wealthy and influential. A plush red carpet covers the floor, contrasting beautifully with the mahogany panelling of the walls. Dim emergency light stretches the length of the car, but only the odd lightbulb casts a glow; most aren't working.
+} 
+GO [west] &vip_men& {
+	<sounds/BGM/nothing.mp3>
+Propping the door to the kitchen open behind you for more light, you begin walking down the long hallway, the sounds of your footsteps muffled by the soft carpet. The silence is unnerving and you move quickly from one circle of light to the next. You are about midway down the hallway when you feel it, that prickling dread. 
+|BREAK|
+*sounds/cinematic/darkChase3.mp3*
+<sounds/BGM/dark3Suspense.mp3>
+The door to the kitchen slams behind you and spinning around you see it, that alien darkness. The mass of roiling shadows fills the east end of the car and it begins to move towards you, slow at first but quickly gaining speed. Lightbulbs burst as it passes by and you turn, running as fast as you can.
+|BREAK|
+*sounds/cinematic/bodySlam.mp3*
+[[vip_party_car]]
+} 
+GO [east] &vip_men& {
+[[kitchen]]
+} 
+
+ROOM [vip_party_car] {
+	<sounds/BGM/nothing.mp3>
+Your burst through the door and slam it shut behind you, a moment later you hear a sickening thud. Holding your breath you wait, but all is silent.
+|BREAK|
+You feel your heart begin to slow down and you take in the room around you. There is no power at all here, but the gentle glow of candlelight permeates the car to reveal a lavish common room decorated for a party. A few couches and a #table# are pushed against the walls leaving the middle of the room free for dancing. On the wall hangs a large #painting# and across from it is a gold framed #photograph#. To the #west# is a door leading to the next car. 
+^++vip_party_car^
+}
+
+ROOM [vip_party_car] &vip_party_car& {
+You have entered the common room. 
+} 
+
+EXAMINE [vip_party_car] &vip_party_car& {
+The room is dark with no electricity, but the gentle glow of candlelight permeates the car to reveal a lavish common room decorated for a party. A few couches and a #table# are pushed against the walls leaving the middle of the room free for dancing. On the wall hangs a large #painting# and across from it is a gold framed #photograph#. To the #west# is a door leading to the next car. 
+}
+
+GO [east] &vip_party_car& {
+The door is dented and warped. It so beyond repair that no amount of tugging will open it. 
+}
+
+GO [west] &vip_party_car& {
+You slide open the door and enter the next car, but without a light to see by the darkness overtakes you.
+*sounds/cinematic/darkEatsYou.mp3*
+[[gameover]]
+}
+GO [west] &vip_party_car& $candlestick$ %candlestick% {
+[[vip_women]]
+} 
+
+EXAMINE [painting] &vip_party_car& {
+The painting has been rendered with astonishing care and detail. In it a #girl# wearing a #necklace# sits in her room with sunlight beaming in through her window. On the wall above her hangs an unadorned #clock#.
+} 
+
+EXAMINE [painting] &vip_party_car& &is_night& {
+The painting has been rendered with astonishing care and detail. In it a #girl# sleeps with the moonlight beaming through her window, and on her bedside table sits a #necklace#. On the wall above her hangs an unadorned #clock#.
+}
+
+EXAMINE [painting] &vip_party_car& $necklace$ {
+The painting on the wall depicts a #girl# wearing a #necklace# seated in her room with sunlight beaming in through the window. On the wall above her hangs an unadorned #clock#.
+} 
+
+EXAMINE [painting] &vip_party_car& $magnet$ {
+The painting on the wall depicts a #girl# wearing a #necklace# seated in her room with sunlight beaming in through the window. On the wall above her hangs an unadorned #clock#.
+} 
+EXAMINE [painting] &vip_party_car& $necklace$ &is_night& {
+The painting on the wall depicts a #girl# sleeping in her bed with moonlight from the window illuminating her room. On the wall above her is an unadorned #clock#.
+} 
+
+EXAMINE [painting] &vip_party_car& $magnet$ &is_night& {
+The painting on the wall depicts a #girl# sleeping in her bed with moonlight from the window illuminating her room. On the wall above her is an unadorned #clock#.
+} 
+
+ 
+EXAMINE [necklace] &vip_party_car& {
+The necklace sits on the bedside table, and it is comprised of a delicate blue pendant strung on a thin wire chain. 
+}
+EXAMINE [necklace] $necklace$ %necklace% {
+You look at the necklace you took from the painting, it’s delicate blue pendant and wire chain are beautiful in the candlelight. 
+}
+EXAMINE [necklace] $magnet$ %magnet% {
+The necklace you once had is now a part of the strange magnet you constructed.
+}
+TAKE [necklace] &vip_party_car& {
+You have no way of taking the necklace. 
+} 
+
+TAKE [necklace] &vip_party_car& $mirror$ {
+The girl in the painting, who is wearing the necklace, is awake. You don't think she would be very pleased so you refrain from taking the necklace. 
+} 
+
+TAKE [necklace] &vip_party_car& &is_night& $mirror$ {
+	*sounds/cinematic/mirrorEnter.mp3*
+You reach through your mirror and into the painting on the wall. The necklace is lying unguarded on the bedside table, and the girl is sound asleep. You grab the necklace as quickly as you can and pull it back through the mirror without waking the girl.
+*sounds/SFX/necklace.mp3*
+^+necklace^ 
+^+++necklace^
+} 
+
+TAKE [necklace] &vip_party_car& &is_night& $mirror$ $necklace$ {
+You already have the necklace. 
+} 
+
+TAKE [necklace] &vip_party_car& &is_night& $mirror$ $magnet$ {
+The necklace is already part of the magnet.
+} 
+
+EXAMINE [clock] &vip_party_car& {
+With the sunlight streaming in from the window and the time on the clock, you surmise it to be early afternoon.
+}
+EXAMINE [clock] &vip_party_car& &is_night& {
+By the moonlight from the window and the time shown on the clock you figure it is well after midnight.
+}
+USE [clock] &vip_party_car& $mirror$ {
+	*sounds/cinematic/mirrorEnter.mp3*
+You reach through the hand mirror into the painting and turn the hands of the clock. The daylight in the painting is replaced by moonlight and the girl removes her necklace before going to sleep.
+^++is_night^
+} 
+USE [clock] &vip_party_car& &is_night& $mirror$ {
+	*sounds/cinematic/mirrorEnter.mp3*
+You reach through your mirror into the painting and move the hands of the clock. The moonlight from the window fades before being replaced by sunlight. The girl awakens and takes the necklace from her bedside table, putting it on.
+^--is_night^
+} 
+USE [clock] &vip_party_car& $mirror$ $necklace$ {
+	*sounds/cinematic/mirrorEnter.mp3*
+You reach through the hand mirror into the painting and turn the hands of the clock. The daylight in the painting is replaced by moonlight and the girl lays down in her bed, going to sleep.
+^++is_night^
+} 
+
+USE [clock] &vip_party_car& $mirror$ $magnet$ {
+	*sounds/cinematic/mirrorEnter.mp3*
+You reach through the hand mirror into the painting and turn the hands of the clock. The daylight in the painting is replaced by moonlight and the girl lays down in her bed, going to sleep.
+^++is_night^
+} 
+USE [clock] &vip_party_car& &is_night& $mirror$ $necklace$ {
+	*sounds/cinematic/mirrorEnter.mp3*
+You reach through your mirror into the painting and move the hands of the clock. The moonlight from the window fades before being replaced by sunlight, and the girl awakens.
+^--is_night^
+} 
+USE [clock] &vip_party_car& &is_night& $mirror$ $magnet$ {
+	*sounds/cinematic/mirrorEnter.mp3*
+You reach through your mirror into the painting and move the hands of the clock. The moonlight from the window fades before being replaced by sunlight, and the girl awakens.
+^--is_night^
+} 
+
+EXAMINE [girl] &vip_party_car& {
+The girl in the painting has a weary face, she seems unhappy.
+}
+EXAMINE [girl] &vip_party_car& &is_night& {
+The girl sleeps soundly in her bed.
+}
+
+EXAMINE [photograph] &vip_party_car& {
+The photograph on the wall depicts a #man# constructing part of a train car. The plaque beneath is indicates that it was taken when this very train was being built. The worker is hammering a piece of #metal#, and there is a can of #paint# in the corner.
+} 
+EXAMINE [photograph] &vip_party_car& $metal$ {
+The photograph shows a train being constructed, and the #man# in the foreground is busy cleaning up the spilled paint.
+}
+EXAMINE [photograph] &vip_party_car& $magnet$ {
+The photograph shows a train being constructed, and the #man# in the foreground is busy cleaning up the spilled paint.
+}
+EXAMINE [man] &vip_party_car& {
+The man looks to be a seasoned labourer and is hard at work building the train car.
+}
+EXAMINE [man] &vip_party_car& &paint_spilled& {
+With the paint all over the floor, the man looks immensely distressed, he is completely focused on cleaning up the mess.
+}
+EXAMINE [metal] &vip_party_car& {
+The man is using some sort of metal piece to complete his job, he is very focused on it.
+}
+
+EXAMINE [metal] $metal$ %metal% {
+You look at the piece of iron you took from the painting, still amazed at how you obtained it. 
+}
+EXAMINE [magnet] $magnet$ %magnet% {
+You study the magnet, surprised that you were able to construct it with such odd materials.
+}
+
+TAKE [metal] &vip_party_car& {
+You cannot take an item from a painting, at least not without some sort of help.
+} 
+
+TAKE [metal] &vip_party_car& $mirror$ {
+The worker in the photograph is it, and you would rather not get between his hammer and the piece of metal.
+} 
+
+TAKE [metal] &vip_party_car& &paint_spilled& $mirror$ {
+	*sounds/cinematic/mirrorEnter.mp3*
+With the man distracted by the spilled paint, you reach through your mirror into the painting and grab the metal piece he was working on. 
+*sounds/SFX/metalTake.mp3*
+^+metal^ 
+^+++metal^
+} 
+
+TAKE [metal] &vip_party_car& &paint_spilled& $mirror$ $metal$ {
+There are some more pieces of metal in the painting but you have already taken what you needed. 
+} 
+
+TAKE [metal] &vip_party_car& &paint_spilled& $mirror$ $magnet${
+The magnet is already constructed, you don’t need anymore metal.
+} 
+
+EXAMINE [paint] &vip_party_car& {
+Behind the construction worker sits an open can of paint, its bright white colour matching the train car behind it.
+}
+
+EXAMINE [paint] &vip_party_car& &paint_spilled& {
+The paint can lays on its side with a large puddle of spilled paint growing around it.
+}
+USE [paint] &vip_party_car& $mirror$ {
+	*sounds/cinematic/mirrorEnter.mp3*
+You reach your hand through the mirror into the photograph and, tipping the paint can over, spill white paint across the ground.
+*sounds/SFX/paintSpill.mp3*
+^++paint_spilled^
+} 
+
+USE [paint] &vip_party_car& &paint_spilled& $mirror$ {
+The paint has already spilled and the man is distracted.
+} 
+
+EXAMINE [candlestick] &vip_party_car& {
+An expensive looking candlestick sits on the table, giving off the only light in the room.
+} 
+EXAMINE [candlestick] $candlestick$ %candlestick% {
+The candlestick burns brightly, its expansive gold base glinting in the light.
+} 
+
+TAKE [candlestick] &vip_party_car& {
+You pick up the burning candlestick. 
+^+candlestick^ ^+++candlestick^
+} 
+TAKE [candlestick] &vip_party_car& $candlestick$ %candlestick% {
+You already have the candlestick.
+} 
+
+
+USE [candlestick] &vip_party_car& {
+Without hesitation you blow out the candle, letting the darkness overtake you.
+|BREAK|
+*sounds/cinematic/darkEatsYou.mp3*
+[[gameover]]
+} 
+USE [candlestick] $candlestick$ %candlestick% {
+Without hesitation you blow out the candle, letting the darkness overtake you.
+|BREAK|
+*sounds/cinematic/darkEatsYou.mp3*
+[[gameover]]
+} 
+
+EXAMINE [table] &vip_party_car& {
+The table is a rich brown and looks to have been painstakingly crafted. On it are the burned down remains of dozens of candles, only a single #candlestick# is still alight. 
+} 
+EXAMINE [table] &vip_party_car& $candlestick$ %candlestick% {
+The table is a rich brown and looks to have been painstakingly crafted. On it are the burned down remains of dozens of candles.
+}
+
+USE [table] &vip_party_car& {
+You don't have what you need to use this right now. 
+}
+USE [table] &vip_party_car& $necklace$ $metal$ $flashlight$ {
+Taking the wire from the necklace, the flashlight, and the piece of metal, you begin to work. After a few long minutes, you somehow manage to create a functioning magnet. 
+^-necklace^ ^---necklace^ ^-metal^ ^---metal^ ^-flashlight^ ^---flashlight^ ^+magnet^ ^+++magnet^
+*sounds/SFX/magnetTinker.mp3*
+}
+ROOM [vip_women] {
+	*sounds/SFX/doorHeavy.mp3*
+You step into the car which turns out to be another sumptuous sleeping car. With no electricity, your candlestick is the only source of light. To the #north# and #south# of you are the sleeping quarters of some passengers, and to the #west# is yet another door. 
+^++vip_women^
+}
+ROOM [vip_women] &vip_women& {
+You have entered the sumptuous sleeping car.
+}
+EXAMINE [room] &vip_women& {
+You step into the car which turns out to be another sumptuous sleeping car. With no electricity, your candlestick is the only source of light. To the #north# and #south# of you are the sleeping quarters of some passengers, and to the #west# is a #door# with a #breaker# on the wall next to it. 
+}
+
+GO [west] &vip_women& {
+You tug on the door but, like the others, it is magnetically sealed shut.
+} 
+GO [west] &vip_women& $magnet$ {
+[[flooding_car]]
+}
+GO [east] &vip_women& {
+[[vip_party_car]]
+} 
+GO [north] &vip_women& {
+[[violet]]
+} 
+GO [south] &vip_women& {
+[[diane]]
+} 
+
+USE [breaker] &vip_women& {
+	*sounds/SFX/breaker.mp3*
+You flip the breaker but nothing happens, it doesn't look like the power will be coming on anytime soon.
+}
+EXAMINE [door] &vip_women& {
+The door is elegantly crafted with a rich dark wood and is magnetically sealed shut.
+} 
+EXAMINE [door] &vip_women& &magnet& {
+The door is elegantly crafted with a rich dark wood and now sits unlocked. 
+} 
+USE [magnet] &vip_women& $magnet$ {
+Using your haphazardly constructed magnet, you manage to painstakingly undo the magnetic seals on the door. 
+^-magnet^ ^---magnet^ ^++magnet^
+}
+ROOM [diane] {
+	*sounds/SFX/doorLight.mp3*
+You enter a bedroom whose furnishings speak of wealth, just like the rest of this part of the train. The room is organized and the bed is well kept. A #journal# lays on the night table, and a hand #mirror# on the wardrobe. There is also a beautifully handcrafted #dresser# in the corner of the room.
+^++diane^
+}
+ROOM [diane] &diane& {
+You have entered the quarters of a wealthy passenger. 
+}
+EXAMINE [room] &diane& {
+The furnishing of the quarters speaks of wealth and comfort. The room is organized and the bed is well kept. A #journal# lays on the night table, and a hand #mirror# on the wardrobe. There is also a beautifully handcrafted #dresser# in the corner of the room.
+}
+EXAMINE [room] &diane& $mirror$ {
+The furnishing of the quarters speaks of wealth and comfort. The room is organized and the bed is well kept. A #journal# lays on the night table, and there is also a beautifully handcrafted #dresser# in the corner of the room.
+} 
+
+GO [north] &diane& {
+*sounds/SFX/doorLight.mp3*
+[[vip_women]]
+} 
+
+EXAMINE [journal] &diane& {
+You find a journal on the night table, the name “Diane” is engraved on the front. Normally you wouldn’t invade someone’s privacy like this but you need any information you can get. You turn to one of the pages, and notice that this woman has been frequently writing about a man she's been seeing named Jack. On one page it reads, “I love Jack...well I think I do. He has travelled such a long way and gone through so much to be on this train with me. But I wonder if we will be able to make it work. My father would be so angry if he were to ever find out, always warning me away from the 'lessers' of society. But Jack is different, he's so caring and sweet, always saying that with our love anything is possible.”
+*sounds/SFX/paper.mp3*
+}
+EXAMINE [mirror] &diane& {
+Sitting on the wardrobe there is a small hand mirror. The edges are masterfully welded with silver and gold. Like the other mirrors, it doesn't show your reflection.
+}
+EXAMINE [mirror] $mirror$ %mirror% {
+You hold the mirror up to your face and pear into it. A complete view of the room behind you appears, but your own reflection is nowhere in sight.
+}
+
+TAKE [mirror] &diane& {
+You pick up the mirror, taking it with you.
+^+mirror^
+^+++mirror^
+}
+TAKE [mirror] &diane& $mirror$ {
+You already have the mirror.
+} 
+
+EXAMINE [dresser] &diane& {
+The dresser in this room is made of expensive cherrywood, it’s locked tight. There is a spot on the hand to enter a password:
+} 
+
+EXAMINE [dresser] &diane& &jdforever& {
+You open the dresser and at first glance find nothing out of the ordinary; clothes, shoes, and some hair ribbons among other things. But on the top shelf, tucked between some other items, is a small vial of liquid. Beside this liquid, a letter. It reads “Lady Diane, here is the sedative you were asking for. It is extremely powerful, and I advise you to use it with caution. I don’t know what you plan to do with this but ingesting more than half of this vial it will slow down a person's heart to a fatal degree. Please be careful.” The letter is signed by an apothecary.
+} 
+
+MISC [jdforever] &diane& {
+You enter the code into the wardrobe handle. After you hear a couple clicks, the door swings open.
+^++jdforever^
+} 
+
+
+ROOM [violet] {
+	*sounds/SFX/doorLight.mp3*
+You enter a bedroom whose furnishings are of fine quality but have strange patterns carved into them. The room would otherwise look quite ordinary if not for the crystals and pieces of coloured glass littering almost every surface. In the corner sits a large chest, and on the bedside table sits a #journal# and an odd looking #flashlight#.
+^++violet^
+}
+ROOM [violet] &violet& {
+You have entered the personal quarters of one of the passengers.
+}
+
+EXAMINE [room] &violet& {
+The furnishings of the room are of fine quality but have strange patterns carved into them. The room would otherwise look quite ordinary if not for the crystals and pieces of coloured glass littering almost every surface. In the corner sits a large chest, and on the bedside table sits a #journal# and an odd looking #flashlight#.
+} 
+EXAMINE [room] &violet& $flashlight$ {
+The furnishings of the room are of fine quality but have strange patterns carved into them. The room would otherwise look quite ordinary if not for the crystals and pieces of coloured glass littering almost every surface. In the corner sits a large chest, and on the bedside table sits a #journal#.
+} 
+
+
+GO [south] &violet& {
+[[vip_women]]
+} 
+
+EXAMINE [chest] &violet& {
+The large chest is made of solid oak and, like the rest of the furnishings, it has odd symbols carved into it. You tug on the lid but it remains shut, and on the front of the chest you see a keyhole.
+} 
+EXAMINE [chest] &violet& &key& {
+The large chest is made of solid oak and, like the rest of the furnishings, it has odd symbols carved into it. Its lid is thrown back, displaying its contents. What looks to be a large crystal ball takes up most of the chest. In and around it are unlabelled vials filled with different coloured liquids. And tucked at the bottom are a number of papers with odd symbols written on them. At the top of each page is a triangle with an eye in the center of it. 
+} 
+USE [key] &violet& $key$ {
+You fit the key into the lock and with a twist of your wrist you open the chest.
+^-key^ ^---key^ ^++key^
+}
+EXAMINE [flashlight] &violet& {
+The flashlight has a crank handle on one end of it that looks like it would be used for recharging the device, but with no rechargeable batteries it doesn't work.
+}
+EXAMINE [flashlight] $flashlight$ %flashlight% {
+The flashlight has a crank handle on one end of it that looks like it would be used for recharging the device, but with no rechargeable batteries it doesn't work.
+}
+TAKE [flashlight] &violet& {
+You take the flashlight with you.
+^+flashlight^ ^+++flashlight^
+}
+TAKE [flashlight] &violet& $flashlight$ {
+You already have the flashlight
+} 
+EXAMINE [journal] &violet& {
+On the inside of the journal's cover is the name 'Violet'. The most recent entry reads, "...met the most interesting gentleman who spoke of his idea for making a hand powered magnet. As he explained, you would only need a piece of metal and some wire to wrap around it as well as a device of some sort to generate a charge. Simply magnificent!"
+}
+
+
+ROOM [flooding_car] {
+	<sounds/BGM/floodcarAmb1.mp3>
+The room is pitch black. Large puddles of water cover the floor and the whole car smells of seawater. You begin to walk down the car, the wet sounds of your footsteps sounding too loud in the near silence. Out of the corner of your eye you see movement.
+
+Whipping around, you brandish your candlestick and peer into the darkness. The wall beside you is wet and you can see the candlelight reflecting off it. Another flicker of movement and you spot what caught your eye; it's your own reflection. 
+<sounds/BGM/floodcarAmb2.mp3>
+|BREAK|
+
+The longer you look, the more you feel like you're missing something. Taking a few steps closer, you finally figure it out. Up close, you can see that your eyes are solid black. You tilt your head trying to get a better look but the movement of your reflection isn't quite right. Its face splits in an unnatural grin and you realize that it's not your reflection at all when it begins to speak…
+<sounds/BGM/floodcarAmb3.mp3>
+|BREAK|
+@8a0303 You have proven to be very difficult to catch. Although it was entertaining for a time, I have tired of it. I have tired of you.@
+|BREAK|
+@8a0303 What makes you special? How is it that you have evaded me longer than any other? @
+(#luck#, #skill#, #silence#)
+^++q1^
+^++flooding_car^
+} 
+
+MISC [luck] &flooding_car& &q1& {
+@8a0303 Luck you say? It has been a long time since my prey has lived long enough to run, so perhaps you are right. But where has it gotten you? You have run so far only to find you've been running towards me, towards death. Luck is a fickle mistress and I believe her favour with you is coming to an end.@
+
+You edge away from the wall and take a few steps down the car. 
+|BREAK|
+@8a0303 Have you tired of running? Do you want to see what comes next? @
+<sounds/BGM/floodcarAmb4.mp3>
+(#yes#, #no#)
+^++q2^
+^++luck1^
+}
+MISC [skill] &flooding_car& &q1& {
+@8a0303 Skill you say? It has been a long time since my prey has lived long enough to run, so perhaps you are right. But where has it gotten you? You have run so far only to find you've been running towards me, towards death. Your strength shines like a candle in the night, but you cannot burn forever. I am the darkness, patient and eternal, and your flame is dimming. @
+
+You edge away from the wall and take a few steps down the car. 
+|BREAK|
+@8a0303 Have you tired of running? Do you want to see what comes next? @
+(#yes#, #no#)
+^++q2^
+^++skill1^
+}
+
+MISC [silence] &flooding_car& &q1& {
+@8a0303 Nothing to say for yourself? It has been a long time since my prey has lived long enough to run, so perhaps you are right to hold on to your secrets. But where has it gotten you? You have run so far only to find you've been running towards me, towards death. Keep your secrets then, I will taste them soon enough. @
+
+You edge away from the wall and take a few steps down the car. 
+|BREAK|
+@8a0303 Have you tired of running? Do you want to see what comes next? @
+(#yes#, #no#, #silence#)
+^++q2^
+^++silence1^
+}
+
+MISC [yes] &q1& &q2& {
+@8a0303 A smart choice, and for that I think I will reward you. @
+
+The reflection disappears and you feel its presence swirl around you, nipping at the edge of your candlelight. 
+|BREAK|
+@8a0303 I will grant you a knowledge more vast than you could ever comprehend, unending and undying. Give yourself to me, let me see this world through your eyes, and you can live forever in me. My knowledge is immeasurable, but you will have an eternity to explore it. Would you like that? @
+(#yes#, #no#)
+^++q3^
+^++yes2^
+}
+MISC [no] &q1& &q2& {
+@8a0303 A foolish choice. Like the rest of your kind, you are shortsighted and witless. @
+
+The reflection disappears and you feel its presence swirl around you, nipping at the edge of your candlelight. 
+|BREAK|
+@8a0303 Give yourself to me, let me see this world through your eyes, and you can live forever. I will let you become one with me and grant you a knowledge more vast than you could ever comprehend. It is unending and undying, and you will have an eternity to explore it. Would you like that? @
+(#yes#, #no#)
+^++q3^
+^++no2^
+}
+MISC [silence] &q1& &q2& {
+@8a0303 Unsure, are you? Perhaps you are not as shortsighted and witless as the rest of your kind. @
+
+The reflection disappears and you feel its presence swirl around you, nipping at the edge of your candlelight. 
+|BREAK|
+@8a0303 Give yourself to me, let me see this world through your eyes, and you can live forever. I will let you become one with me and grant you a knowledge more vast than you could ever comprehend. It is unending and undying, and you will have an eternity to explore it. What you like that? @
+(#yes#, #no#)
+^++q3^
+^++silence2^
+}
+MISC [silence] &q1& &q2& &silence1& {
+@8a0303 I see I have overestimated your intelligence, you are clearly slow and witless. No matter, I will still enjoy devouring you. @
+
+The reflection lunges toward you, the sudden vicious movement startling you into dropping your candlestick. As the light goes out, the last thing you see are its glinting rows of sharp teeth.
+^++q3^
+^++silence2^
+*sounds/cinematic/darkEatsYou.mp3*
+|BREAK|
+[[gameover]]
+}
+
+
+MISC [yes] &q1& &q2& &q3& {
+	<sounds/BGM/floodcarAmb5.mp3>
+@8a0303 Wonderful... @
+
+You let the candlestick fall from your hand and, tilting your head back, welcome the darkness as the light flickers and dies. It floods into you and its ocean of knowledge washes over your mind. But the euphoria quickly fades, being replaced with fear when you hear the screams of the other souls trapped within the monster. Your struggles are in vain as it slowly tears your mind apart, relishing in your pain.
+^++q4^
+^++yes3^
+|BREAK|
+[[gameover]]
+}
+MISC [no] &q1& &q2& &q3& {
+	<sounds/BGM/floodcarAmb5.mp3>
+@8a0303 A pity. But no matter, with every land dweller I consume I can feel the burn of that wretched light fade. Soon I will rise to the surface and walk among you. I will consume your knowledge, and you will crumble and fade like dust in the wind. Your time is up, there is nowhere left for you to run. @
+
+The darkness rises up behind you, poised to strike. 
+(#fight#, #flee#)
+^++q4^
+^++no3^
+}
+
+MISC [fight] &q1& &q2& &q3& &q4& {
+You lunge at the shadowy form swiping at it with your candlestick. It shies away from the light and you press your advantage quickly trapping it in the corner. As you raise you candlestick for the final blow, it's misty face twists into a grin and suddenly the darkness spears you from behind. 
+
+@8a0303 Did you really think you could kill me with that puny little light? I think I'm going to quite enjoy this. @
+
+You are suddenly yanked backwards, the sudden vicious movement wrenching the candlestick from your hand. As the light goes out, the last thing you see are its glinting rows of sharp teeth.
+*sounds/cinematic/darkEatsYou.mp3*
+^++q5^ 
+|BREAK|
+[[gameover]]
+}
+MISC [flee] &q1& &q2& &q3& &q4& {
+You throw your candlestick directly into its torso, buying yourself a few precious moments as it howls in pain. You turn and sprint to the door at the far end. Unlike the others, this door looks like a submarine hatch sealed by a crank handle. You begin to spin it frantically.
+
+@8a0303 HOW DARE YOU. YOU WILL SUFFER FOR YOUR IMPUDENCE. @
+
+The darkness is fast approaching and you continue to spin the handle as fast as you can. Just as it is almost upon you, the door unseals and swings open. Without looking back you throw yourself through, slamming the door shut behind you. 
+^++q5^
+|BREAK|
+[[conductor_car]]
+}
+
+ROOM [conductor_car] {
+	*sounds/SFX/doorSlam.mp3*
+The metal door shudders and creaks as the darkness slams against it. 
+
+@8a0303 YOU THINK THIS DOOR WILL STOP ME? THERE IS NOWHERE LEFT FOR YOU TO RUN, IT IS ONLY A MATTER OF TIME. @
+
+The door shrieks in protest at the darkness continues to slam against it, but it seems to be holding for now. You turn around taking in your surroundings. Dozens of buttons blink up at you, their gentle glow giving you just enough light to navigate by. You have reached the engine car. 
+
+|BREAK|
+You quickly locate the radio, but it remains silent no matter which knobs you turn. Moving on, you spy the controls for the engine and, crossing your fingers, you begin to push buttons at random. 
+
+Suddenly, you feel the engine flare to life. With only a moment of hesitation, you push the handle labelled 'Thrust' to its highest setting and hope that you can reach the light before it's too late... 
+|BREAK|
+^+++done^
+[[credits]]
+}
+
+ROOM [credits] &done& {
+	Thank you for playing Reflections of the Deep.
+	|BREAK|
+	Special thanks to Matthew Bouchard and the STS350 team.
+	|BREAK|
+	The team: Aaron Tripodi, Aidan Kucharski, Bisan Hasasneh, Kyla Wong, Zachary Selk
+	|BREAK|
+	Sounds obtained from zapsplat.com.
+	“Breath, human, scared, fear 002” altered under CC 4.0 https://creativecommons.org/licenses/by/4.0/
+	Music from freemusicarchive.com
+	|BREAK|
+}
