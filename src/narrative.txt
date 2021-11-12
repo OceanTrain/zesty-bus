@@ -165,7 +165,7 @@ GO [north] &sleeper_car_west& {
 GO [south] &sleeper_car_west& %bad% {
 Staring at the door to your room you can't bring yourself to enter it, the fear of what could be waiting on the other side stops you. 
 }
-Go [south] &sleeper_car_west& %good% {
+GO [south] &sleeper_car_west& %good% {
 	[[your_room]]
 }
 GO [east] &sleeper_car_west& {
@@ -327,7 +327,7 @@ EXAMINE [desk] &old_man_mirror& &lantern_taken& {
 On the desk sits a number of piles of #paper#, almost all of which is written in poor handwriting.
 }
 EXAMINE [table] &old_man_mirror& {
-On the side table sits a picture in which an old married couple smile at the camera holding hands. The engraving in the frame reads, "Francine & Elijah". 
+On the side table sits a picture in which an old married couple smile at the camera holding hands. The engraving in the frame reads, "Francine and Elijah". 
 }
 EXAMINE [mirror] &old_man_mirror& {
 Tucked in the corner stands a tall #mirror# of fine quality, through it you can see the room you came from.
@@ -442,7 +442,7 @@ The emergency lighting casts long shadows across the empty dining car. A number 
 ROOM [dining_car] &dining_car& %breaker1% %breaker2% %nogo_b2_dining% {
 	<sounds/BGM/lights.mp3>
 You enter the #dining car#, the warm lights overhead giving the room a more welcoming feeling. Although the power has been restored the lights still occasionally flicker.
----nogo_b2_dining
+^---nogo_b2_dining^
 }
 EXAMINE [room] &dining_car& %breaker1% %breaker2% {
 	<sounds/BGM/lights.mp3>

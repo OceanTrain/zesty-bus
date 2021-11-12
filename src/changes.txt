@@ -1,0 +1,1 @@
+Line 330: { On the side table sits a picture in which an old married couple smile at the camera holding hands. The engraving in the frame reads, "Francine & Elijah". } -> { On the side table sits a picture in which an old married couple smile at the camera holding hands. The engraving in the frame reads, "Francine and Elijah". }
