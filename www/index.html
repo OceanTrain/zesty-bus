@@ -6,31 +6,61 @@
   </head>
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    <script src="./bootstrap.js"></script>
     <script src="p5.js"></script>
     <script src="p5.dom.js"></script>
     <script src="p5.sound.js"></script>
     <script src="printClass.js"></script>
     <script src="shell.js"></script>
-    <script src="./bootstrap.js"></script>
     <!--<script type="module" src="interface.js"></script>-->
     <!--<script src="dist/index.js">-->
 
     <script>
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+
+      async function callWhenReady(func) {
+        while (func === undefined) {
+          await sleep(500);
+        }
+        func();
+      }
+
+      async function callAfter(ms, func) {
+        await sleep(ms);
+        func();
+      }
+
+      function callWhenReady2(func) {
+        if (func === undefined) {
+          setTimeout(callWhenReady2, 50, func);
+        } else {
+          func();
+        }
+      }
+
       function preload() {
-        window.preload();
+        //callWhenReady(window.gPreload);
+        window.gPreload();
       }
 
       function setup() {
-        window.setup();
+        //callWhenReady(window.gSetup);
+        window.gSetup();
       }
 
       function draw() {
-        window.draw();
+        //callWhenReady(window.gDraw);
+        window.gDraw();
       }
 
       function keyTyped() {
-        window.myKeyTyped();
+        //callWhenReady(window.gKeyTyped);
+        window.gKeyTyped();
       }
+
+      for (var i = 0; i < 100000000; ++i) {}
     </script>
   </body>
 </html>

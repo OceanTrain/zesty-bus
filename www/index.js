@@ -1,7 +1,8 @@
 import * as wasm from "reflections";
 
 console.log("Loaded");
-var narrative;
+var narrative = undefined;
+var gNarrativeStarted = false;
 //var player_inventory;
 //var global_inventory;
 var inconsolata;
@@ -17,70 +18,94 @@ var fontItal;
 var game;
 window.global = {};
 window.global.display_string = undefined;
-window.preload = function()
+window.gPreload = function()
 {
   inconsolata = loadFont('./Courier_Prime/Courier-Prime.ttf');
   window.global.inconsolata = inconsolata;
   fontBold = loadFont('./Courier_Prime/Courier-Prime-Bold.ttf');
   fontItal = loadFont('./Courier_Prime/Courier-Prime-Italic.ttf')
+  //sound = loadSound("sounds/SFX/lanternUse.mp3");
+  window.global.preloadFinished = true;
+}
+
+window.gSetup = function()
+{
+  if (window.global.preloadFinished !== true) {
+    callAfter(50, window.gSetup);
+    return;
+  }
+  //let width = 1000;
+  //let height = 600;
+  //let text_size = width / 40;
+  let width = 2000;
+  let height = 1200;
+  let text_size = width / 50;
+  let text_font = inconsolata;
+
+  createCanvas(width, height, WEBGL);
+  textFont(inconsolata);
+  textSize(text_size);
+  textAlign(LEFT, CENTER);
 
   console.log("Loading narrative file");
-  narrative = loadStrings("./narrative.txt");
+  loadStrings("./narrative.txt", startNarrative, narrativeLoadingIssue);
+
+
+  //player_inventory = new Inventory();
+  //global_inventory = new Inventory();
+
+  //console.log("attempt parser");
+  //parser = new Parser(narrative, player_inventory, global_inventory, soundEffect, backgroundMusic);
+  //console.log("made parser, attempt chopping");
+  //parser.chopIntoTags();
+  //console.log("successfully chopped");
+  //console.log("hello?");
+  //console.log(parser.query);
+  //parser.menu()
+  //parser.query("ROOM", "init");
+  //console.log("successfully queueried");
+  shell = new Shell(width, height, text_font, text_size);
+  /*
+  parser.tokenize();
+  parser.printTokens();
+
+  // Set the starting room
+  parser.rooms.current_room = parser.rooms.getRoom("init", player_inventory, global_inventory);
+  console.log("Running Room");
+  parser.rooms.current_room.run(player_inventory, global_inventory);
+  console.log("Done running room");
+  //parser.rooms.current_room.next(player_inventory, global_inventory);
+  //parser.rooms.current_room.next(player_inventory, global_inventory);
+  //loadSound("sounds/SFX/lanternUse.mp3", audioCallback);
+  
+  */
+  window.global.setupFinished = true;
+}
+
+function startNarrative(strings) {
+  narrative = strings.join(" ");
+  game = wasm.compile(narrative);
+  let start_text = game.start();
+  window.global.display_string = new printClass(start_text, -900, -500, 1600);
   console.log("Narrative file loaded");
-  //sound = loadSound("sounds/SFX/lanternUse.mp3");
+  gNarrativeStarted = true;
 }
 
-window.setup = function()
-{
-    //let width = 1000;
-    //let height = 600;
-    //let text_size = width / 40;
-    let width = 2000;
-    let height = 1200;
-    let text_size = width / 50;
-    let text_font = inconsolata;
-
-    createCanvas(width, height, WEBGL);
-    textFont(inconsolata);
-    textSize(text_size);
-    textAlign(LEFT, CENTER);
-
-    narrative = narrative.join(" ");
-    game = wasm.compile(narrative);
-    let start_text = game.start();
-    window.global.display_string = new printClass(start_text, -900, -500, 1600);
-    console.log(game.list_all_rooms());
-    //player_inventory = new Inventory();
-    //global_inventory = new Inventory();
-
-    //console.log("attempt parser");
-    //parser = new Parser(narrative, player_inventory, global_inventory, soundEffect, backgroundMusic);
-    //console.log("made parser, attempt chopping");
-    //parser.chopIntoTags();
-    //console.log("successfully chopped");
-    //console.log("hello?");
-    //console.log(parser.query);
-    //parser.menu()
-    //parser.query("ROOM", "init");
-    //console.log("successfully queueried");
-    shell = new Shell(width, height, text_font, text_size);
-    /*
-    parser.tokenize();
-    parser.printTokens();
-
-    // Set the starting room
-    parser.rooms.current_room = parser.rooms.getRoom("init", player_inventory, global_inventory);
-    console.log("Running Room");
-    parser.rooms.current_room.run(player_inventory, global_inventory);
-    console.log("Done running room");
-    //parser.rooms.current_room.next(player_inventory, global_inventory);
-    //parser.rooms.current_room.next(player_inventory, global_inventory);
-    //loadSound("sounds/SFX/lanternUse.mp3", audioCallback);
-    
-    */
+function narrativeLoadingIssue(err) {
+  console.error("Issue loading narrative: " + err);
 }
 
-window.draw = function() {
+window.gDraw = function() {
+  if (window.global.preloadFinished !== true || window.global.setupFinished !== true) {
+    background(0);
+    return;
+  }
+
+  if (!gNarrativeStarted) {
+    background(0);
+    return;
+  }
+
   // Main game loop
   background(0);
   let time = Math.floor(millis());
@@ -95,7 +120,7 @@ window.draw = function() {
   
 }
 
-window.myKeyTyped = function() {
+window.gKeyTyped = function() {
     //parser.interupt();
     shell.keyTyped();
     if(shell.commandReady())
