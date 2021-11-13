@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Reflections-of-the-Deep</title>
+  </head>
+  <body>
+    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    <script src="p5.js"></script>
+    <script src="p5.dom.js"></script>
+    <script src="p5.sound.js"></script>
+    <script src="printClass.js"></script>
+    <script src="shell.js"></script>
+    <script src="./bootstrap.js"></script>
+    <!--<script type="module" src="interface.js"></script>-->
+    <!--<script src="dist/index.js">-->
+
+    <script>
+      function preload() {
+        window.preload();
+      }
+
+      function setup() {
+        window.setup();
+      }
+
+      function draw() {
+        window.draw();
+      }
+
+      function keyTyped() {
+        window.myKeyTyped();
+      }
+    </script>
+  </body>
+</html>

@@ -1,3 +1,6 @@
+extern crate wasm_bindgen;
+extern crate cfg_if;
+
 use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
@@ -5,6 +8,28 @@ use std::fmt::{self, Display};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::{thread, time};
+use cfg_if::cfg_if;
+use wasm_bindgen::prelude::*;
+
+cfg_if! {
+    // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
+    // allocator.
+    if #[cfg(feature = "wee_alloc")] {
+        extern crate wee_alloc;
+        #[global_allocator]
+        static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+    }
+}
+
+#[wasm_bindgen]
+extern {
+    fn alert(s: &str);
+}
+
+#[wasm_bindgen]
+pub fn greet() {
+    alert("Hello, wasm-game-of-life!");
+}
 
 #[derive(Clone, Copy)]
 struct DisplayRepeat<T>(usize, T);
@@ -211,6 +236,17 @@ impl Inventory {
     }
   }
 
+  pub fn to_string(&self, room: &String) -> String {
+    let personal = self.personal.iter().fold(String::from("Personal: ["), |a, b| a + " " + b) + " ]";
+    let room = match self.room.get(room) {
+      Some(r) => r.iter().fold(String::from("Room: ["), |a, b| a + " " + b) + " ]",
+      None => String::from("Room: [ ]"),
+    };
+    let global = self.global.iter().fold(String::from("Global: ["), |a, b| a + " " + b) + " ]";
+
+    format!("{}\n{}\n{}\n", personal, room, global)
+  }
+
   // Check is the item is in the inventory.
   pub fn check_item(&self, item: &GameItem, room: &String) -> bool {
     match &item.inventory {
@@ -273,6 +309,202 @@ impl Inventory {
     }
   }
 }
+
+#[wasm_bindgen]
+pub struct Game {
+  inventory: Inventory,
+  rooms: HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>,
+  current_room_name: String,
+  current_room_index: usize,
+}
+
+impl Game {
+  pub fn new(rooms_map: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Game {
+    let inventory = Inventory::new();
+    let mut new_map = HashMap::new();
+    for (key, val) in rooms_map.iter() {
+      let (r, a) = val;
+      new_map.insert(key.to_string(), (r.clone(), a.clone()));
+    }
+
+    Game {
+      inventory: inventory,
+      rooms: new_map,
+      current_room_name: "init".to_string(),
+      current_room_index: 0,
+    }
+  }
+
+  pub fn print_room(&self, room_name: &String) -> String {
+    let room = match self.find_room(&room_name) {
+      Ok((r, a)) => r,
+      Err(msg) => panic!(msg),
+    };
+
+    let mut output = "{\n  \"room_output\": [\n".to_string();
+    for i in 0..room.scope.len() {
+      match &room.scope[i].value {
+        Expr::Break => { 
+          output.push_str("    \"|BREAK|\",\n");
+        },
+        Expr::Delay(token) => { output.push_str(&format!("    \"|{}|\",\n", token.to_string())); },  // TODO: actually read delay.
+        Expr::Room(game_room) => { panic!("Discovered Room '{}' inside of Room '{}'", game_room.name.to_string(), self.current_room_name); },
+        Expr::Goto(token) => {
+          output.push_str(&format!("    \"[[{}]]\",\n", token.to_string()));
+          //let new_room_name = token.to_string();
+          //match find_room(&rooms, &new_room_name, &inventory) {
+          //  Ok((r, a)) => {
+          //    room = r;
+          //    actions = a;
+          //  },
+          //  Err(msg) => return Err(msg),
+          //};
+          //skip_actions = true;
+          //break;
+        },
+        Expr::Text(game_text) => {
+          output.push_str(&format!("    \"{}\",\n", format!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>())));
+        },
+        Expr::Audio(game_audio) => { output.push_str(&format!("    \"<{}>\",\n", game_audio.path.to_string())); },
+        Expr::Action(game_action) => { panic!("Discovered Action '{} |{}|' inside of Room '{}'", game_action.action.to_string(), game_action.name.to_string(), self.current_room_name); },
+        Expr::Require(game_item) => { panic!("Discovered 'Require({})', inside of Room '{}'", game_item.name.to_string(), self.current_room_name); },
+        Expr::Modify(game_item) => { 
+          //self.inventory.modify(&game_item, &self.current_room_name); 
+          output.push_str(&format!("    \"^{}^\",\n", game_item.name.to_string()));
+        },
+      }
+    }
+    output.push_str("  ],\n}");
+
+    output
+  }
+
+  pub fn find_room(&self, room_name: &String) -> Result<(GameRoom, Vec<GameAction>), String> {
+    match self.rooms.get(room_name) {
+      Some((game_rooms, game_actions)) => {
+        for i in 0..game_rooms.len() {
+          if self.inventory.check_items(&game_rooms[i].requirements, &room_name) {
+            return Ok((game_rooms[i].clone(), game_actions.to_vec()));  // TODO handle lifetime so that refrences can be returned.
+          }
+        }
+        return Err(format!("No acceptable room could be found for '{}'", room_name));
+      },
+      None => {
+        println!("Room keys");
+        for key in self.rooms.keys() {
+          println!("{}", key);
+        }
+        return Err(format!("Could not find room '{}'", room_name))
+      },
+    }
+  }
+
+  pub fn find_action_index(&self, action_type: &String, action_name: &String) -> Result<usize, String> {
+    let actions = match self.rooms.get(&self.current_room_name) {
+      Some((r, a)) => a,
+      None => return Err(format!("ICE: Could not find the room '{}'", self.current_room_name)),
+    };
+
+    for i in 0..actions.len() {
+      if actions[i].action.to_string().to_uppercase() == action_type.to_string().to_uppercase() && actions[i].name.to_string().to_lowercase() == action_name.to_string().to_lowercase() {
+        if self.inventory.check_items(&actions[i].requirements, &self.current_room_name) {
+          return Ok(i);
+        }
+      }
+    }
+    
+    return Err(format!("Invalid command '{} {}', try again", action_type, action_name));
+  }
+
+  pub fn print_scope(&mut self, scope: &Vec<ParseNode>) -> String {
+    let mut output = String::new();
+    for i in 0..scope.len() {
+      match &scope[i].value {
+        Expr::Break => { 
+          output.push_str("|BREAK|\n");
+        },
+        Expr::Delay(token) => { output.push_str(&format!("|{}|\n", token.to_string())); },  // TODO: actually read delay.
+        Expr::Room(game_room) => { panic!("Discovered Room '{}' inside of Room '{}'", game_room.name.to_string(), self.current_room_name); },
+        Expr::Goto(token) => {
+          //output.push_str(&format!("[[{}]]\n", token.to_string()));
+          let new_room_name = token.to_string();
+          match self.find_room(&new_room_name) {
+            Ok((r, a)) => {
+              self.current_room_name = r.name.to_string();
+            },
+            Err(msg) => return format!("Error: {}", msg),
+          };
+          //skip_actions = true;
+          //break;
+        },
+        Expr::Text(game_text) => {
+          if i+1 < scope.len() {
+            match &scope[i+1].value {
+              Expr::Text(t) => output.push_str(&format!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>())),
+              _ => output.push_str(&format!("{}\n", format!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>()))),
+            }
+          } else {
+            output.push_str(&format!("{}\n", format!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>())));
+          }
+        },
+        Expr::Audio(game_audio) => { output.push_str(&format!("<{}>\n", game_audio.path.to_string())); },
+        Expr::Action(game_action) => { panic!("Discovered Action '{} |{}|' inside of Room '{}'", game_action.action.to_string(), game_action.name.to_string(), self.current_room_name); },
+        Expr::Require(game_item) => { panic!("Discovered 'Require({})', inside of Room '{}'", game_item.name.to_string(), self.current_room_name); },
+        Expr::Modify(game_item) => { 
+          self.inventory.modify(&game_item, &self.current_room_name); 
+        },
+      }
+    }
+
+    output
+  }
+
+  pub fn get_current_room(&self) -> GameRoom {
+    self.rooms.get(&self.current_room_name).unwrap().0[self.current_room_index].clone()
+  }
+}
+
+#[wasm_bindgen]
+impl Game {
+  pub fn start(&mut self) -> String {
+     let rooms = match self.rooms.get(&self.current_room_name) {
+       Some((r, a)) => r,
+       None => return format!("Error: ROOM |{}| not found", self.current_room_name),
+     };
+
+    for i in 0..rooms.len() {
+      if self.inventory.check_items(&rooms[i].requirements, &self.current_room_name) {
+        return self.print_scope(&rooms[i].scope.clone());
+      }
+    }
+
+    format!("Error: Could not find any ROOM |{}| for which satisfied the current inventory requirements\n{}", self.current_room_name, self.inventory.to_string(&self.current_room_name))
+  }
+
+  pub fn list_all_rooms(&self) -> String {
+    self.rooms.keys().fold(String::new(), |a, b| a + b + "\n")
+  }
+
+  pub fn print_current_room(&mut self) -> String {
+    self.print_scope(&self.get_current_room().scope)   
+  }
+
+  pub fn query(&mut self, action: String, command: String) -> String {
+    let index = match self.find_action_index(&action, &command) {
+      Ok(i) => i,
+      Err(msg) => return format!("Could not find action: {} |{}| under ROOM |{}|. ({})", action, command, self.current_room_name, msg),
+    };
+
+    let scope = self.rooms.get(&self.current_room_name).unwrap().1[index].scope.clone();
+
+    self.print_scope(&scope)
+  }
+
+  pub fn print_inventory(&self) -> String {
+    self.inventory.to_string(&self.current_room_name).to_string()
+  }
+}
+
 
 // Basic contructor for Token
 impl Token {
@@ -492,6 +724,7 @@ pub fn run() {
   let src_path = root_path.join("src");
   let narrative_path = src_path.join("narrative.txt");
   let mut program = read_program(&narrative_path);
+  //let mut program = read_program_from_string(&GAME_TEXT.to_string());
   match lex(&program) {
     Ok(tok) => program.tokens = tok,
     Err(msg) => panic!("Error: {}\n", msg),
@@ -512,6 +745,35 @@ pub fn run() {
     Ok(_) => (),
     Err(msg) => panic!("Error: {}\n", msg),
   }
+}
+
+#[wasm_bindgen]
+pub fn add(a: i32, b: i32) -> i32 {
+  a + b
+}
+
+#[wasm_bindgen]
+pub fn compile(text: String) -> Game {
+  let mut program = read_program_from_string(&text);
+  match lex(&program) {
+    Ok(tok) => program.tokens = tok,
+    Err(msg) => panic!("Error: {}\n", msg),
+  }
+
+
+  //program.print_tokens();
+  let nodes = match parse(&program) {
+    Ok(nodes) => nodes,
+    Err(msg) => panic!("Error: {}\n", msg),
+  };
+
+  let rooms = match setup_rooms(&nodes) {
+    Ok(rooms) => rooms,
+    Err(msg) => panic!("Error: {}\n", msg),
+  };
+
+  let game = Game::new(&rooms);
+  game
 }
 
 fn find_room(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>, room_name: &String, inventory: &Inventory) -> Result<(GameRoom, Vec<GameAction>), String> {
@@ -721,7 +983,27 @@ fn read_program(filename: &Path) -> Program {
   };
 
   let text = text_string.chars().collect();
+  println!("DISPLAY: {}", display.to_string());
   Program::new(display.to_string(), text)
+}
+
+fn read_program_from_string(text: &String) -> Program {
+  //let display = filename.display();
+  //let mut file = match File::open(&filename) {
+  //  Ok(f) => f,
+  //  Err(msg) => panic!("Could not open {}: {}", display, msg),
+  //};
+
+  //let mut text_string = String::new();
+  //match file.read_to_string(&mut text_string) {
+  //  Ok(_) => (),
+  //  Err(msg) => panic!("Could not read {}: {}", display, msg),
+  //};
+
+  //let text = text_string.chars().collect();
+  let text_string = text.to_string();
+  let text = text_string.chars().collect();
+  Program::new("".to_string(), text)
 }
 
 // Tests whether or not a character is considered to be a "text" character
@@ -731,6 +1013,7 @@ fn is_text(ch: char) -> bool {
     'A'..='Z' => true,
     '0'..='9' => true,
     '"' => true,
+    '\'' => true,
     ',' => true,
     '.' => true,
     '-' => true,
@@ -740,6 +1023,8 @@ fn is_text(ch: char) -> bool {
     '!' => true,
     '?' => true,
     '/' => true,
+    //'(' => true,
+    //')' => true,
     _ => false,
   }
 }
