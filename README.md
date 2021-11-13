@@ -11,7 +11,7 @@ TODO
 
 ## 🐧 Dependancies
 
-* cargo
+* [cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html)
 
 ## ⬇️ Install
 
