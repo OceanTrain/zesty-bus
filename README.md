@@ -24,7 +24,15 @@ cd zesty-bus
 ## 🛠️ Build and Run
 
 ```
+# For terminal
 cargo run
+
+# For Web-Server
+cargo install wasm-pack
+wasm-pack build
+cd www
+npm install
+npm run start
 ```
 
 Then go to a browser and type `localhost:8080` into the url
