@@ -21,30 +21,25 @@ cfg_if! {
     }
 }
 
-#[wasm_bindgen]
-extern {
-    fn alert(s: &str);
-}
+// A collection of utility functions
+mod util {
+  use std::fmt::{self, Display};
 
-#[wasm_bindgen]
-pub fn greet() {
-    alert("Hello, wasm-game-of-life!");
-}
-
-#[derive(Clone, Copy)]
-struct DisplayRepeat<T>(usize, T);
-
-impl<T: Display> Display for DisplayRepeat<T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for _ in 0..self.0 {
-            self.1.fmt(f)?;
-        }
-        Ok(())
-    }
-}
-
-fn repeat<T>(times: usize, item: T) -> DisplayRepeat<T> {
-    DisplayRepeat(times, item)
+  #[derive(Clone, Copy)]
+  pub struct DisplayRepeat<T>(usize, T);
+  
+  impl<T: Display> Display for DisplayRepeat<T> {
+      fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+          for _ in 0..self.0 {
+              self.1.fmt(f)?;
+          }
+          Ok(())
+      }
+  }
+  
+  pub fn repeat<T>(times: usize, item: T) -> DisplayRepeat<T> {
+      DisplayRepeat(times, item)
+  }
 }
 
 // Base type created by the lexer to seperate the program
@@ -1023,8 +1018,11 @@ fn is_text(ch: char) -> bool {
     '!' => true,
     '?' => true,
     '/' => true,
-    //'(' => true,
-    //')' => true,
+    '#' => true,
+    '@' => true,
+    '(' => true,
+    ')' => true,
+    '~' => true,
     _ => false,
   }
 }
@@ -1100,16 +1098,16 @@ fn lex(program: &Program) -> Result<Vec<Token>, String> {
     len = 1;
     
     match ch {
-      '#' => tokens.push(Token::new(TokenKind::Pound, index)),
+      //'#' => tokens.push(Token::new(TokenKind::Pound, index)),
       '%' => tokens.push(Token::new(TokenKind::Percent, index)),
       '&' => tokens.push(Token::new(TokenKind::Ampersand, index)),
-      '(' => tokens.push(Token::new(TokenKind::OpenParen, index)),
-      ')' => tokens.push(Token::new(TokenKind::CloseParen, index)),
+      //'(' => tokens.push(Token::new(TokenKind::OpenParen, index)),
+      //')' => tokens.push(Token::new(TokenKind::CloseParen, index)),
       '*' => tokens.push(Token::new(TokenKind::Asterisk, index)),
       '+' => tokens.push(Token::new(TokenKind::Plus, index)),
       '<' => tokens.push(Token::new(TokenKind::LessThan, index)),
       '>' => tokens.push(Token::new(TokenKind::GreaterThan, index)),
-      '@' => tokens.push(Token::new(TokenKind::At, index)),
+      //'@' => tokens.push(Token::new(TokenKind::At, index)),
       '-' => tokens.push(Token::new(TokenKind::Minus, index)),
       '[' => tokens.push(Token::new(TokenKind::OpenSquareBracket, index)),
       ']' => tokens.push(Token::new(TokenKind::CloseSquareBracket, index)),
@@ -1117,7 +1115,7 @@ fn lex(program: &Program) -> Result<Vec<Token>, String> {
       '{' => tokens.push(Token::new(TokenKind::OpenCurlyBrace, index)),
       '}' => tokens.push(Token::new(TokenKind::CloseCurlyBrace, index)),
       '|' => tokens.push(Token::new(TokenKind::Pipe, index)),
-      '~' => tokens.push(Token::new(TokenKind::Tilde, index)),
+      //'~' => tokens.push(Token::new(TokenKind::Tilde, index)),
       '$' => tokens.push(Token::new(TokenKind::Dollar, index)),
       '\n' => tokens.push(Token::new(TokenKind::Newline, index)),
       '\r' => (),
@@ -1773,7 +1771,7 @@ fn parse(program: &Program) -> Result<Vec<ParseNode>, String> {
         let token = program.tokens[pos].to_string();
         //let count = if token.chars().next().unwrap() == '"' {token.chars().count()-2} else {token.chars().count()};
         let count = token.chars().count();
-        let highlight = format!("{}{}", repeat(col, ' '), repeat(count, '^'));
+        let highlight = format!("{}{}", util::repeat(col, ' '), util::repeat(count, '^'));
         print!("ERROR INFO: {}", pos);
         return Err(format!("Found incorect token on line {} while parsing {} or TODO\n{}\n{}", row+1, token, line, highlight))
       },
