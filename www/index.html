@@ -6,61 +6,45 @@
   </head>
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    <!-- init.js must be first -->
+    <script src="init.js"></script>
     <script src="./bootstrap.js"></script>
     <script src="p5.js"></script>
     <script src="p5.dom.js"></script>
     <script src="p5.sound.js"></script>
     <script src="printClass.js"></script>
     <script src="shell.js"></script>
-    <!--<script type="module" src="interface.js"></script>-->
-    <!--<script src="dist/index.js">-->
 
     <script>
-      function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-      }
-
-      async function callWhenReady(func) {
-        while (func === undefined) {
-          await sleep(500);
-        }
-        func();
-      }
-
-      async function callAfter(ms, func) {
-        await sleep(ms);
-        func();
-      }
-
-      function callWhenReady2(func) {
-        if (func === undefined) {
-          setTimeout(callWhenReady2, 50, func);
-        } else {
-          func();
-        }
-      }
-
       function preload() {
-        //callWhenReady(window.gPreload);
-        window.gPreload();
+        window.global.var.font = loadFont("Courier_Prime/Courier-Prime.ttf");
+        window.global.var.fontBold = loadFont("Courier_Prime/Courier-Prime-Bold.ttf");
+        window.global.var.fontItalic = loadFont("Courier_Prime/Courier-Prime-Italic.ttf");
+        window.global.var.narrative = loadStrings("narrative.txt");
       }
 
       function setup() {
-        //callWhenReady(window.gSetup);
-        window.gSetup();
+        window.global.var.canvasWidth = 2000;
+        window.global.var.canvasHeight = 1200;
+        window.global.var.textSize = window.global.var.canvasWidth / 50;
+        textSize(window.global.var.textSize);
+        textAlign(LEFT, CENTER);
+        createCanvas(window.global.var.canvasWidth, window.global.var.canvasHeight, WEBGL);
+        var fonts = {
+          regular: window.global.var.font,
+          bold: window.global.var.fontBold,
+          italic: window.global.var.fontItalic
+        };
+        window.global.var.shell = new Shell(window.global.var.canvasWidth, window.global.var.canvasHeight, fonts, window.global.var.textSize);
       }
 
       function draw() {
-        //callWhenReady(window.gDraw);
-        window.gDraw();
+        window.global.func.draw();
       }
 
       function keyTyped() {
-        //callWhenReady(window.gKeyTyped);
-        window.gKeyTyped();
+        window.global.func.keyTyped();
       }
-
-      for (var i = 0; i < 100000000; ++i) {}
     </script>
   </body>
 </html>

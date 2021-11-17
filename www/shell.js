@@ -1,11 +1,25 @@
 class Shell
 {
-    constructor(canvas_width, canvas_height, font, text_size)
+    constructor(canvas_width, canvas_height, fonts, text_size)
     {
         this.shell_line = "> ";
         this.width = canvas_width;
         this.height = canvas_height;
-        this.font = font;
+        if (fonts.regular !== undefined) {
+          this.font = fonts.regular;
+        } else {
+          this.font = fonts;
+        }
+        if (fonts.bold !== undefined) {
+          this.bold = fonts.bold;
+        } else {
+          this.bold = this.font;
+        }
+        if (fonts.italic !== undefined) {
+          this.italic = fonts.italic;
+        } else {
+          this.italic = this.font;
+        }
         this.text_size = text_size;
         this.command_ready = false;
         this.continue = false;

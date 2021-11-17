@@ -84,39 +84,6 @@ class printClass{
        //Resets print location for call so we consistently print in the right place
        this.currentX = this.startX;
        this.currentY = this.startY;
-
-       //Old code, used for printing chars one at a time on screen
-       //May work?, not well if it does
-       /*
-        if(this.stringPointer < this.fullString.length && this.counter++ > 2){
-            this.counter = 0;
-
-            //Break test
-            //Doesn't wait for player input
-            //if(this.fullString[this.stringPointer] == '|'){
-                //this.output += '\n \n';
-                //this.stringPointer += 7;
-            //}
-            /*
-            if(this.fullString[this.stringPointer] == '@'){
-                color = '#';
-                for(i = 3; i < 9; i++){
-                    color += this.fullString[this.stringPointer + i];
-                }
-                this.colorSet(color);
-            }
-            
-           
-           var j;
-           print(this.stringPointer + 's');
-            for(j = 0; j < this.stringPointer; j++){
-                print(j + 'j');
-                this.letters[j].lprint();
-            }
-            this.stringPointer++;
-        }
-        */
-
         //Loops through all objects in letters and calls its print function
         var j;
         for(j = 0; j < this.length; j++)
@@ -190,14 +157,15 @@ class letter{
     }
 
     lprint(x,y){
+        textSize(window.global.var.textSize);
         if(this.typing == 0){
-            textFont(window.global.inconsolata);
+            textFont(window.global.var.font);
         }
         else if(this.typing == 1){
-            textFont(fontBold);
+            textFont(window.global.var.fontBold);
         }
         else{
-            textFont(fontItal);
+            textFont(window.global.var.fontItalic);
         }
         //print(this.color);
         //let c = color(color);
