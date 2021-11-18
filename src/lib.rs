@@ -4,22 +4,21 @@ extern crate cfg_if;
 use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
-use std::fmt::{self, Display};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::{thread, time};
-use cfg_if::cfg_if;
+//use cfg_if::cfg_if;
 use wasm_bindgen::prelude::*;
 
-cfg_if! {
-    // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
-    // allocator.
-    if #[cfg(feature = "wee_alloc")] {
-        extern crate wee_alloc;
-        #[global_allocator]
-        static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-    }
-}
+//cfg_if! {
+//    // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
+//    // allocator.
+//    if #[cfg(feature = "wee_alloc")] {
+//        extern crate wee_alloc;
+//        #[global_allocator]
+//        static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+//    }
+//}
 
 // A collection of utility functions
 mod util {
@@ -169,13 +168,13 @@ fn expr_to_string(expr: &Expr) -> String {
   match expr {
     Expr::Break => format!("|BREAK|"),
     Expr::Delay(token) => format!("{}", token_kind_to_string(&token.kind)),
-    Expr::Room(gameRoom) => format!("Room |{}|", gameRoom.name.to_string()),
+    Expr::Room(game_room) => format!("Room |{}|", game_room.name.to_string()),
     Expr::Goto(token) => format!("[[{}]]", token_kind_to_string(&token.kind)),
-    Expr::Text(gameText) => format!("{}", (&gameText.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>()),
-    Expr::Audio(gameAudio) => format!("<{}>", gameAudio.path.to_string()),
-    Expr::Action(gameAction) => format!("{} |{}|", gameAction.action.to_string(), gameAction.name.to_string()),
-    Expr::Require(gameItem) => format!("REQUIRE({})", gameItem.name.to_string()),
-    Expr::Modify(gameItem) => format!("MODIFY({})", gameItem.name.to_string()),
+    Expr::Text(game_text) => format!("{}", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>()),
+    Expr::Audio(game_audio) => format!("<{}>", game_audio.path.to_string()),
+    Expr::Action(game_action) => format!("{} |{}|", game_action.action.to_string(), game_action.name.to_string()),
+    Expr::Require(game_item) => format!("REQUIRE({})", game_item.name.to_string()),
+    Expr::Modify(game_item) => format!("MODIFY({})", game_item.name.to_string()),
   }
 }
 
@@ -204,10 +203,10 @@ fn token_kind_to_string(kind: &TokenKind) -> String {
     TokenKind::Semicolon => format!(";"),
     TokenKind::Tilde => format!("~"),
     TokenKind::Newline => format!("\n"),
-    _ => format!("TODO"),
   }
 }
 
+#[allow(dead_code)]
 fn match_token_kind(kind_a: &TokenKind, kind_b: &TokenKind) -> bool {
   match (kind_a, kind_b) {
     (TokenKind::Text(t_a), TokenKind::Text(t_b)) => if t_a == t_b { return true } else { return false },
@@ -216,10 +215,12 @@ fn match_token_kind(kind_a: &TokenKind, kind_b: &TokenKind) -> bool {
   }
 }
 
+#[wasm_bindgen]
+#[derive(Clone)]
 pub struct Inventory {
-  pub personal: HashSet<String>,
-  pub room: HashMap<String, HashSet<String>>,
-  pub global: HashSet<String>,
+  personal: HashSet<String>,
+  room: HashMap<String, HashSet<String>>,
+  global: HashSet<String>,
 }
 
 impl Inventory {
@@ -266,37 +267,93 @@ impl Inventory {
     true
   }
 
-  pub fn add_item(&mut self, item: &GameItem, room: &String) {
+  pub fn add_item(&self, item: &GameItem, room_name: &String) -> Inventory {
     match item.inventory {
-      InventoryKind::Personal => { self.personal.insert(item.name.to_string()); },
-      InventoryKind::Global => { self.global.insert(item.name.to_string()); },
+      InventoryKind::Personal => { 
+        let mut personal = self.personal.clone();
+        let global = self.global.clone();
+        let room = self.room.clone();
+        personal.insert(item.name.to_string()); 
+        Inventory {
+          personal: personal,
+          global: global,
+          room: room,
+        }
+      },
+      InventoryKind::Global => { 
+        let personal = self.personal.clone(); 
+        let mut global = self.global.clone(); 
+        let room = self.room.clone();
+        global.insert(item.name.to_string()); 
+        Inventory {
+          personal: personal,
+          global: global,
+          room: room,
+        }
+      },
       InventoryKind::Room => {
-        match self.room.get_mut(room) {
+        let personal = self.personal.clone(); 
+        let global = self.global.clone(); 
+        let mut room = self.room.clone();
+        match room.get_mut(room_name) {
           Some(room_inventory) => { room_inventory.insert(item.name.to_string()); },
           None => {
             let mut new_inventory = HashSet::new();
             new_inventory.insert(item.name.to_string());
-            self.room.insert(room.to_string(), new_inventory);
+            room.insert(room_name.to_string(), new_inventory);
           },
+        }
+        Inventory {
+          personal: personal,
+          global: global,
+          room: room,
         }
       },
     }
   }
 
-  pub fn remove_item(&mut self, item: &GameItem, room: &String) {
+  pub fn remove_item(&self, item: &GameItem, room_name: &String) -> Inventory {
     match item.inventory {
-      InventoryKind::Personal => { self.personal.remove(&item.name.to_string()); },
-      InventoryKind::Global => { self.global.remove(&item.name.to_string()); },
+      InventoryKind::Personal => { 
+        let mut personal = self.personal.clone(); 
+        let global = self.global.clone(); 
+        let room = self.room.clone();
+        personal.remove(&item.name.to_string()); 
+        Inventory {
+          personal: personal,
+          global: global,
+          room: room,
+        }
+      },
+      InventoryKind::Global => { 
+        let personal = self.personal.clone(); 
+        let mut global = self.global.clone(); 
+        let room = self.room.clone();
+        global.remove(&item.name.to_string()); 
+        Inventory {
+          personal: personal,
+          global: global,
+          room: room,
+        }
+      },
       InventoryKind::Room => {
-        match self.room.get_mut(room) {
+        let personal = self.personal.clone(); 
+        let global = self.global.clone(); 
+        let mut room = self.room.clone();
+        match room.get_mut(room_name) {
           Some(room_inventory) => { room_inventory.remove(&item.name.to_string()); },
           None => (),
+        }
+        Inventory {
+          personal: personal,
+          global: global,
+          room: room,
         }
       }
     }
   }
 
-  pub fn modify(&mut self, item: &GameItem, room: &String) {
+  pub fn modify(&self, item: &GameItem, room: &String) -> Inventory {
     match item.action {
       InventoryAction::Add => self.add_item(&item, &room),
       InventoryAction::Remove => self.remove_item(&item, &room),
@@ -306,16 +363,84 @@ impl Inventory {
 }
 
 #[wasm_bindgen]
-pub struct Game {
+#[derive(Clone)]
+pub struct GameState {
   inventory: Inventory,
-  rooms: HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>,
   current_room_name: String,
   current_room_index: usize,
 }
 
+impl GameState {
+  pub fn new(inventory: Inventory, room_name: String, room_index: usize) -> GameState {
+    GameState {
+      inventory: inventory,
+      current_room_name: room_name,
+      current_room_index: room_index,
+    }
+  }
+
+  pub fn init() -> GameState {
+    GameState::new(Inventory::new(), String::from("init"), 0)
+  }
+
+  pub fn get_inventory(&mut self) -> &mut Inventory {
+    &mut self.inventory
+  }
+
+  pub fn get_room_name(&self) -> &String {
+    &self.current_room_name
+  }
+
+  pub fn get_room_index(&self) -> usize {
+    self.current_room_index
+  }
+
+  pub fn set_inventory(&mut self, inventory: Inventory) {
+    self.inventory = inventory;
+  }
+
+  pub fn set_room_name(&mut self, name: String) {
+    self.current_room_name = name; 
+  }
+
+  pub fn set_room_index(&mut self, index: usize) {
+    self.current_room_index = index;
+  }
+}
+
+#[wasm_bindgen]
+pub struct GameResult {
+  text: String,
+  state: GameState,
+}
+
+impl GameResult {
+  pub fn new(text: String, state: GameState) -> GameResult {
+    GameResult {
+      text: text,
+      state: state,
+    }
+  }
+}
+
+#[wasm_bindgen]
+impl GameResult {
+  pub fn to_string(&self) -> String {
+    self.text.clone()
+  }
+
+  pub fn to_state(&self) -> GameState {
+    self.state.clone()
+  }
+}
+
+#[wasm_bindgen]
+pub struct Game {
+  rooms: HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>,
+}
+
 impl Game {
   pub fn new(rooms_map: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Game {
-    let inventory = Inventory::new();
     let mut new_map = HashMap::new();
     for (key, val) in rooms_map.iter() {
       let (r, a) = val;
@@ -323,17 +448,14 @@ impl Game {
     }
 
     Game {
-      inventory: inventory,
       rooms: new_map,
-      current_room_name: "init".to_string(),
-      current_room_index: 0,
     }
   }
 
-  pub fn print_room(&self, room_name: &String) -> String {
-    let room = match self.find_room(&room_name) {
-      Ok((r, a)) => r,
-      Err(msg) => panic!(msg),
+  pub fn print_room(&self, room_name: &String, state: &GameState) -> String {
+    let room = match self.find_room(&room_name, &state) {
+      Ok((r, _a)) => r,
+      Err(msg) => panic!("{}", msg),
     };
 
     let mut output = "{\n  \"room_output\": [\n".to_string();
@@ -343,7 +465,7 @@ impl Game {
           output.push_str("    \"|BREAK|\",\n");
         },
         Expr::Delay(token) => { output.push_str(&format!("    \"|{}|\",\n", token.to_string())); },  // TODO: actually read delay.
-        Expr::Room(game_room) => { panic!("Discovered Room '{}' inside of Room '{}'", game_room.name.to_string(), self.current_room_name); },
+        Expr::Room(game_room) => { panic!("Discovered Room '{}' inside of Room '{}'", game_room.name.to_string(), state.get_room_name()); },
         Expr::Goto(token) => {
           output.push_str(&format!("    \"[[{}]]\",\n", token.to_string()));
           //let new_room_name = token.to_string();
@@ -361,8 +483,8 @@ impl Game {
           output.push_str(&format!("    \"{}\",\n", format!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>())));
         },
         Expr::Audio(game_audio) => { output.push_str(&format!("    \"<{}>\",\n", game_audio.path.to_string())); },
-        Expr::Action(game_action) => { panic!("Discovered Action '{} |{}|' inside of Room '{}'", game_action.action.to_string(), game_action.name.to_string(), self.current_room_name); },
-        Expr::Require(game_item) => { panic!("Discovered 'Require({})', inside of Room '{}'", game_item.name.to_string(), self.current_room_name); },
+        Expr::Action(game_action) => { panic!("Discovered Action '{} |{}|' inside of Room '{}'", game_action.action.to_string(), game_action.name.to_string(), state.get_room_name()); },
+        Expr::Require(game_item) => { panic!("Discovered 'Require({})', inside of Room '{}'", game_item.name.to_string(), state.get_room_name()); },
         Expr::Modify(game_item) => { 
           //self.inventory.modify(&game_item, &self.current_room_name); 
           output.push_str(&format!("    \"^{}^\",\n", game_item.name.to_string()));
@@ -374,11 +496,11 @@ impl Game {
     output
   }
 
-  pub fn find_room(&self, room_name: &String) -> Result<(GameRoom, Vec<GameAction>), String> {
+  pub fn find_room(&self, room_name: &String, state: &GameState) -> Result<(GameRoom, Vec<GameAction>), String> {
     match self.rooms.get(room_name) {
       Some((game_rooms, game_actions)) => {
         for i in 0..game_rooms.len() {
-          if self.inventory.check_items(&game_rooms[i].requirements, &room_name) {
+          if state.inventory.check_items(&game_rooms[i].requirements, &room_name) {
             return Ok((game_rooms[i].clone(), game_actions.to_vec()));  // TODO handle lifetime so that refrences can be returned.
           }
         }
@@ -394,15 +516,15 @@ impl Game {
     }
   }
 
-  pub fn find_action_index(&self, action_type: &String, action_name: &String) -> Result<usize, String> {
-    let actions = match self.rooms.get(&self.current_room_name) {
-      Some((r, a)) => a,
-      None => return Err(format!("ICE: Could not find the room '{}'", self.current_room_name)),
+  pub fn find_action_index(&self, action_type: &String, action_name: &String, state: &GameState) -> Result<usize, String> {
+    let actions = match self.rooms.get(state.get_room_name()) {
+      Some((_r, a)) => a,
+      None => return Err(format!("ICE: Could not find the room '{}'", state.get_room_name())),
     };
 
     for i in 0..actions.len() {
       if actions[i].action.to_string().to_uppercase() == action_type.to_string().to_uppercase() && actions[i].name.to_string().to_lowercase() == action_name.to_string().to_lowercase() {
-        if self.inventory.check_items(&actions[i].requirements, &self.current_room_name) {
+        if state.inventory.check_items(&actions[i].requirements, &state.get_room_name()) {
           return Ok(i);
         }
       }
@@ -411,23 +533,25 @@ impl Game {
     return Err(format!("Invalid command '{} {}', try again", action_type, action_name));
   }
 
-  pub fn print_scope(&mut self, scope: &Vec<ParseNode>) -> String {
+  pub fn print_scope(&self, scope: &Vec<ParseNode>, state: &GameState) -> GameResult {
     let mut output = String::new();
+    let mut new_state = state.clone();
+    let mut inventory = new_state.get_inventory().clone();
     for i in 0..scope.len() {
       match &scope[i].value {
         Expr::Break => { 
           output.push_str("|BREAK|\n");
         },
         Expr::Delay(token) => { output.push_str(&format!("|{}|\n", token.to_string())); },  // TODO: actually read delay.
-        Expr::Room(game_room) => { panic!("Discovered Room '{}' inside of Room '{}'", game_room.name.to_string(), self.current_room_name); },
+        Expr::Room(game_room) => { panic!("Discovered Room '{}' inside of Room '{}'", game_room.name.to_string(), new_state.get_room_name()); },
         Expr::Goto(token) => {
           //output.push_str(&format!("[[{}]]\n", token.to_string()));
           let new_room_name = token.to_string();
-          match self.find_room(&new_room_name) {
-            Ok((r, a)) => {
-              self.current_room_name = r.name.to_string();
+          match self.find_room(&new_room_name, &state) {
+            Ok((r, _a)) => {
+              new_state.set_room_name(r.name.to_string());
             },
-            Err(msg) => return format!("Error: {}", msg),
+            Err(msg) => return GameResult::new(format!("Error: {}", msg), new_state),
           };
           //skip_actions = true;
           //break;
@@ -435,7 +559,7 @@ impl Game {
         Expr::Text(game_text) => {
           if i+1 < scope.len() {
             match &scope[i+1].value {
-              Expr::Text(t) => output.push_str(&format!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>())),
+              Expr::Text(_t) => output.push_str(&format!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>())),
               _ => output.push_str(&format!("{}\n", format!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>()))),
             }
           } else {
@@ -443,60 +567,65 @@ impl Game {
           }
         },
         Expr::Audio(game_audio) => { output.push_str(&format!("<{}>\n", game_audio.path.to_string())); },
-        Expr::Action(game_action) => { panic!("Discovered Action '{} |{}|' inside of Room '{}'", game_action.action.to_string(), game_action.name.to_string(), self.current_room_name); },
-        Expr::Require(game_item) => { panic!("Discovered 'Require({})', inside of Room '{}'", game_item.name.to_string(), self.current_room_name); },
+        Expr::Action(game_action) => { panic!("Discovered Action '{} |{}|' inside of Room '{}'", game_action.action.to_string(), game_action.name.to_string(), new_state.get_room_name()); },
+        Expr::Require(game_item) => { panic!("Discovered 'Require({})', inside of Room '{}'", game_item.name.to_string(), new_state.get_room_name()); },
         Expr::Modify(game_item) => { 
-          self.inventory.modify(&game_item, &self.current_room_name); 
+          inventory = inventory.modify(&game_item, &new_state.get_room_name()); 
         },
       }
     }
+    new_state.set_inventory(inventory);
 
-    output
+    GameResult::new(output, new_state)
   }
 
-  pub fn get_current_room(&self) -> GameRoom {
-    self.rooms.get(&self.current_room_name).unwrap().0[self.current_room_index].clone()
+  pub fn get_current_room(&self, state: &GameState) -> GameRoom {
+    self.rooms.get(state.get_room_name()).unwrap().0[state.get_room_index()].clone()
   }
 }
 
 #[wasm_bindgen]
 impl Game {
-  pub fn start(&mut self) -> String {
-     let rooms = match self.rooms.get(&self.current_room_name) {
-       Some((r, a)) => r,
-       None => return format!("Error: ROOM |{}| not found", self.current_room_name),
+  pub fn start(&self) -> GameResult {
+    let state = GameState::init();
+    let rooms = match self.rooms.get(&state.current_room_name) {
+       Some((r, _a)) => r,
+       None => return GameResult::new(format!("Error: ROOM |{}| not found", state.get_room_name()), state),
      };
 
     for i in 0..rooms.len() {
-      if self.inventory.check_items(&rooms[i].requirements, &self.current_room_name) {
-        return self.print_scope(&rooms[i].scope.clone());
+      if state.inventory.check_items(&rooms[i].requirements, &state.get_room_name()) {
+        return self.print_scope(&rooms[i].scope, &state);
       }
     }
 
-    format!("Error: Could not find any ROOM |{}| for which satisfied the current inventory requirements\n{}", self.current_room_name, self.inventory.to_string(&self.current_room_name))
+    let text = format!("Error: Could not find any ROOM |{}| for which satisfied the current inventory requirements\n{}", state.current_room_name, state.inventory.to_string(&state.get_room_name()));
+    GameResult::new(text, state)
   }
 
-  pub fn list_all_rooms(&self) -> String {
-    self.rooms.keys().fold(String::new(), |a, b| a + b + "\n")
+  pub fn list_all_rooms(&self, state: &GameState) -> GameResult {
+    let text = self.rooms.keys().fold(String::new(), |a, b| a + b + "\n");
+    GameResult::new(text, state.clone())
   }
 
-  pub fn print_current_room(&mut self) -> String {
-    self.print_scope(&self.get_current_room().scope)   
+  pub fn print_current_room(&self, state: &GameState) -> GameResult {
+    self.print_scope(&self.get_current_room(&state).scope, &state)
   }
 
-  pub fn query(&mut self, action: String, command: String) -> String {
-    let index = match self.find_action_index(&action, &command) {
+  pub fn query(&self, action: String, command: String, state: &GameState) -> GameResult {
+    let index = match self.find_action_index(&action, &command, &state) {
       Ok(i) => i,
-      Err(msg) => return format!("Could not find action: {} |{}| under ROOM |{}|. ({})", action, command, self.current_room_name, msg),
+      Err(msg) => return GameResult::new(format!("Could not find action: {} |{}| under ROOM |{}|. ({})", action, command, state.get_room_name(), msg), state.clone()),
     };
 
-    let scope = self.rooms.get(&self.current_room_name).unwrap().1[index].scope.clone();
+    let scope = &self.rooms.get(state.get_room_name()).unwrap().1[index].scope;
 
-    self.print_scope(&scope)
+    self.print_scope(&scope, &state)
   }
 
-  pub fn print_inventory(&self) -> String {
-    self.inventory.to_string(&self.current_room_name).to_string()
+  pub fn print_inventory(&self, state: &GameState) -> GameResult {
+    let text = state.inventory.to_string(&state.get_room_name()).to_string();
+    GameResult::new(text, state.clone())
   }
 }
 
@@ -630,6 +759,7 @@ impl Program {
     self.text[start..end].iter().collect()
   }
 
+  #[allow(dead_code)]
   pub fn print_tokens(&self) {
     for token in &self.tokens {
       let string = token.to_string();
@@ -637,11 +767,13 @@ impl Program {
     }
   }
 
+  #[allow(dead_code)]
   pub fn expected_token_error(&self, expected_token: TokenKind, found_token: usize) -> String {
     let line = self.get_line(found_token);
     format!("Expected '{}' but found '{}' instead\n{}", token_kind_to_string(&expected_token), token_kind_to_string(&self.tokens[found_token].kind), line)
   }
 
+  #[allow(dead_code)]
   pub fn expect_token(&self, expected_token: TokenKind, pos: usize) -> Result<usize, String> {
     match &self.tokens[pos].kind {
       tok if *tok == expected_token => Ok(pos+1),
@@ -684,7 +816,7 @@ impl Program {
 
   pub fn eat_token(&self, pos: usize, kind: &TokenKind) -> Result<usize, String> {
     match self.get_token(pos, kind) {
-      Ok((tok, index)) => Ok(index+1),
+      Ok((_tok, index)) => Ok(index+1),
       Err(msg) => Err(msg),
     }
   }
@@ -696,7 +828,7 @@ impl Program {
       Err(msg) => return Err(msg),
     };
     let end_pos = match self.get_token(start_pos, &closing_token(&opening)) {
-      Ok((tok, i)) => i,
+      Ok((_tok, i)) => i,
       Err(msg) => return Err(msg),
     };
     for index in start_pos..end_pos {
@@ -705,6 +837,7 @@ impl Program {
     Ok((scope, end_pos+1))
   }
 
+  #[allow(dead_code)]
   pub fn peek_token(&self, pos: usize, token: TokenKind) -> bool {
     if pos+1 < self.tokens.len() && match_token_kind(&token, &self.tokens[pos+1].kind) {
       true
@@ -719,7 +852,6 @@ pub fn run() {
   let src_path = root_path.join("src");
   let narrative_path = src_path.join("narrative.txt");
   let mut program = read_program(&narrative_path);
-  //let mut program = read_program_from_string(&GAME_TEXT.to_string());
   match lex(&program) {
     Ok(tok) => program.tokens = tok,
     Err(msg) => panic!("Error: {}\n", msg),
@@ -743,11 +875,7 @@ pub fn run() {
 }
 
 #[wasm_bindgen]
-pub fn add(a: i32, b: i32) -> i32 {
-  a + b
-}
-
-#[wasm_bindgen]
+#[allow(dead_code)]
 pub fn compile(text: String) -> Game {
   let mut program = read_program_from_string(&text);
   match lex(&program) {
@@ -805,24 +933,27 @@ fn find_action(actions: &Vec<GameAction>, room_name: &String, action_type: Strin
 
 fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Result<bool, String> {
   let mut inventory = Inventory::new();
-  let mut current_room = String::from("init");
+  let current_room = String::from("init");
   let (mut room, mut actions) = match find_room(&rooms, &current_room, &inventory) {
     Ok((room, actions)) => (room, actions),
     Err(msg) => return Err(msg),
   };
 
   let mut line = String::new();
-  while true {
+  loop {
     println!("Now in Room: {}", room.name.to_string());
     let mut skip_actions = false;
     for i in 0..room.scope.len() {
       match &room.scope[i].value {
         Expr::Break => { 
           print!("\n");
-          std::io::stdin().read_line(&mut line); 
+          match std::io::stdin().read_line(&mut line) {
+            Ok(_) => (),
+            Err(msg) => return Err(msg.to_string()),
+          }
           line.clear();
         },
-        Expr::Delay(token) => { thread::sleep(time::Duration::from_secs(5)); },  // TODO: actually read delay.
+        Expr::Delay(_token) => { thread::sleep(time::Duration::from_secs(5)); },  // TODO: actually read delay.
         Expr::Room(game_room) => { return Err(format!("Discovered Room '{}' inside of Room '{}'", game_room.name.to_string(), current_room)); },
         Expr::Goto(token) => {
           let new_room_name = token.to_string();
@@ -839,10 +970,10 @@ fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Resu
         Expr::Text(game_text) => {
           print!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>());
         },
-        Expr::Audio(game_audio) => { continue; },
+        Expr::Audio(_game_audio) => { continue; },
         Expr::Action(game_action) => { return Err(format!("Discovered Action '{} |{}|' inside of Room '{}'", game_action.action.to_string(), game_action.name.to_string(), current_room)); },
         Expr::Require(game_item) => { return Err(format!("Discovered 'Require({})', inside of Room '{}'", game_item.name.to_string(), current_room)); },
-        Expr::Modify(game_item) => { inventory.modify(&game_item, &current_room); },
+        Expr::Modify(game_item) => { inventory = inventory.modify(&game_item, &current_room); },
       }
     }
 
@@ -855,11 +986,11 @@ fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Resu
     while !leave_actions {
 
       print!("\n");
-      let mut index: usize = 0;
-      while true {
+      let index: usize;
+      loop {
         let mut command: String = "MISC".to_string();
-        let mut argument: String = "".to_string();
-        while true {
+        let argument: String;
+        loop {
           line.clear();
           std::io::stdin().read_line(&mut line).expect("Failed to read input");
           line = format!("{}", line.replace('\n', ""));
@@ -891,10 +1022,13 @@ fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Resu
         match &action.scope[i].value {
           Expr::Break => { 
             print!("\n");
-            std::io::stdin().read_line(&mut line); 
+            match std::io::stdin().read_line(&mut line) {
+              Ok(_) => (),
+              Err(msg) => return Err(msg.to_string()),
+            }
             line.clear();
           },
-          Expr::Delay(token) => { thread::sleep(time::Duration::from_secs(5)); },  // TODO: actually read delay.
+          Expr::Delay(_token) => { thread::sleep(time::Duration::from_secs(5)); },  // TODO: actually read delay.
           Expr::Room(game_room) => { return Err(format!("Discovered Room '{}' inside of Action '{} |{}|'", game_room.name.to_string(), action.action.to_string(), action.name.to_string())); },
           Expr::Goto(token) => {
             let new_room_name = token.to_string();
@@ -911,7 +1045,7 @@ fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Resu
           Expr::Text(game_text) => {
             print!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>());
           },
-          Expr::Audio(game_audio) => { continue; },
+          Expr::Audio(_game_audio) => { continue; },
           Expr::Action(game_action) => { return Err(format!("Discovered Action '{} |{}|' inside of Action '{} |{}|'", game_action.action.to_string(), game_action.name.to_string(), action.action.to_string(), action.name.to_string())); },
           Expr::Require(game_item) => { return Err(format!("Discovered 'Require({})', inside of Action '{} |{}|'", game_item.name.to_string(), action.action.to_string(), action.name.to_string())); },
           Expr::Modify(game_item) => { inventory.modify(&game_item, &current_room); },
@@ -919,9 +1053,6 @@ fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Resu
       }
     }
   }
-  
-  
-  Ok(true)
 }
 
 fn setup_rooms(nodes: &Vec<ParseNode>) -> Result<HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>, String> {
@@ -931,8 +1062,8 @@ fn setup_rooms(nodes: &Vec<ParseNode>) -> Result<HashMap<String, (Vec<GameRoom>,
   let mut current_room_name: String = "".to_string();
   for i in 0..nodes.len() {
     match &nodes[i].value {
-      Expr::Room(gameRoom) => {
-        if gameRoom.name.to_string() != current_room_name {
+      Expr::Room(game_room) => {
+        if game_room.name.to_string() != current_room_name {
           if !grouped_rooms.is_empty() {
             if rooms.contains_key(&current_room_name) {
               return Err(format!("The room name '{}' was found in multiple differnt sections", current_room_name));
@@ -942,12 +1073,12 @@ fn setup_rooms(nodes: &Vec<ParseNode>) -> Result<HashMap<String, (Vec<GameRoom>,
           rooms.insert(current_room_name.clone(), (grouped_rooms.clone(), grouped_actions.clone()));
           grouped_rooms.clear();
           grouped_actions.clear();
-          current_room_name = gameRoom.name.to_string();
+          current_room_name = game_room.name.to_string();
         }
-        grouped_rooms.push(gameRoom.clone());
+        grouped_rooms.push(game_room.clone());
       },
-      Expr::Action(gameAction) => {
-        grouped_actions.push(gameAction.clone());
+      Expr::Action(game_action) => {
+        grouped_actions.push(game_action.clone());
       },
       other => return Err(format!("Found '{}' on the top level tree nodes", expr_to_string(&other))),
     }
@@ -982,20 +1113,8 @@ fn read_program(filename: &Path) -> Program {
   Program::new(display.to_string(), text)
 }
 
+#[allow(dead_code)]
 fn read_program_from_string(text: &String) -> Program {
-  //let display = filename.display();
-  //let mut file = match File::open(&filename) {
-  //  Ok(f) => f,
-  //  Err(msg) => panic!("Could not open {}: {}", display, msg),
-  //};
-
-  //let mut text_string = String::new();
-  //match file.read_to_string(&mut text_string) {
-  //  Ok(_) => (),
-  //  Err(msg) => panic!("Could not read {}: {}", display, msg),
-  //};
-
-  //let text = text_string.chars().collect();
   let text_string = text.to_string();
   let text = text_string.chars().collect();
   Program::new("".to_string(), text)
@@ -1195,7 +1314,7 @@ fn lex(program: &Program) -> Result<Vec<Token>, String> {
 
 fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), String> {
   program.eat_whitespace_tokens(pos).and_then(|i| match &program.tokens[i].kind {
-    TokenKind::Text(t) => {
+    TokenKind::Text(_t) => {
       let mut text = Vec::new();
       text.push(program.tokens[i].clone());
       let game_text = GameText {
@@ -1222,8 +1341,8 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
             return Err(format!("Inventory requirements must be in the format '&var&', but found '&{}&' instead", tokens.into_iter().map(|t| -> String { t.to_string() }).collect::<String>()))
           }
           let var = match &tokens[0].kind {
-            TokenKind::Text(t) => tokens[0].clone(),
-            other => return Err("Incorect type in iventory requirement, must be in the format '&var&'".to_string()),
+            TokenKind::Text(_t) => tokens[0].clone(),
+            _ => return Err("Incorect type in iventory requirement, must be in the format '&var&'".to_string()),
           };
           // TODO Check if correct
           let inventory = InventoryKind::Room;
@@ -1245,7 +1364,7 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
           if tokens.len() != 1 {
             return Err("Sound effect must be in the format '*path/to/audio*'".to_string())
           }
-          if let TokenKind::Text(t) = &tokens[0].kind {
+          if let TokenKind::Text(_t) = &tokens[0].kind {
             let path = tokens[0].clone();
             // TODO Handle music path somehow
             let music = GameAudio {
@@ -1272,7 +1391,7 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
 
           for tok in text_tokens.iter() {
             match &tok.kind {
-              TokenKind::Text(t) => (),
+              TokenKind::Text(_t) => (),
               other => return Err(format!("Colored text '@xxxxxx ..@' only supports string objects however {} was found", token_kind_to_string(&other))),
             }
           }
@@ -1294,8 +1413,8 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
             return Err("Inventory modification must be in the format '^([+-]+)(var)^'".to_string())
           }
           let var = match &tokens[tokens.len()-1].kind {
-            TokenKind::Text(t) => tokens[tokens.len()-1].clone(),
-            other => return Err("Missing variable in inventory modification, must be in the format '^([+-]+)(var)^'".to_string()),
+            TokenKind::Text(_t) => tokens[tokens.len()-1].clone(),
+            _ => return Err("Missing variable in inventory modification, must be in the format '^([+-]+)(var)^'".to_string()),
           };
 
           let mut pos = 0;
@@ -1351,8 +1470,8 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
             return Err("Inventory requirements must be in the format '$var$'".to_string())
           }
           let var = match &tokens[0].kind {
-            TokenKind::Text(t) => tokens[0].clone(),
-            other => return Err("Incorect type in iventory requirement, must be in the format '$var$'".to_string()),
+            TokenKind::Text(_t) => tokens[0].clone(),
+            _ => return Err("Incorect type in iventory requirement, must be in the format '$var$'".to_string()),
           };
           // TODO Check if correct
           let inventory = InventoryKind::Personal;
@@ -1373,7 +1492,7 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
           if tokens.len() != 1 {
             return Err(format!("Music must be in the format '<path/to/audio>', found '<{}>' instead", tokens.into_iter().map(|t| -> String { t.to_string() }).collect::<String>()))
           }
-          if let TokenKind::Text(t) = &tokens[0].kind {
+          if let TokenKind::Text(_t) = &tokens[0].kind {
             let path = tokens[0].clone();
             // TODO Handle music path somehow
             let music = GameAudio {
@@ -1400,7 +1519,7 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
           //let text = tokens.into_iter().map(|t| -> String { t.to_string() }).collect::<String>();
           text.push(program.tokens[i].clone());
           for token in &tokens {
-            text.push(program.tokens[i].clone());
+            text.push(token.clone());
           }
           text.push(program.tokens[index-1].clone());
           let game_text = GameText {
@@ -1440,8 +1559,8 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
             return Err("Inventory requirements must be in the format '%var%'".to_string())
           }
           let var = match &tokens[0].kind {
-            TokenKind::Text(t) => tokens[0].clone(),
-            other => return Err("Incorect type in iventory requirement, must be in the format '%var%'".to_string()),
+            TokenKind::Text(_t) => tokens[0].clone(),
+            _ => return Err("Incorect type in iventory requirement, must be in the format '%var%'".to_string()),
           };
           // TODO Check if correct
           let inventory = InventoryKind::Global;
@@ -1462,7 +1581,7 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
           if tokens.len() != 1 {
             return Err("Expected '|' to be appart of '|BREAK|'".to_string())
           }
-          let keyword = match &tokens[0].kind {
+          match &tokens[0].kind {
             TokenKind::Keyword(t) => {
               if t == "BREAK" {
                 t
@@ -1477,7 +1596,7 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
                 return Err(format!("Expected to find the keyword 'BREAK' inside '|..|', but found '|{}|' instead", t))
               }
             }
-            other => return Err(format!("Expected to find the keyword 'BREAK' inside '|..|', but found '|{}|' instead", tokens[0].to_string())),
+            _ => return Err(format!("Expected to find the keyword 'BREAK' inside '|..|', but found '|{}|' instead", tokens[0].to_string())),
           };
 
           Ok((ParseNode::new(Expr::Break), index))
@@ -1491,7 +1610,7 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
         Ok((tokens, index)) => {
           for tok in tokens.iter() {
             match &tok.kind {
-              TokenKind::Text(t) => (),
+              TokenKind::Text(_t) => (),
               other => return Err(format!("Bolded text '#..#' only supports string objects however {} was found", token_kind_to_string(&other))),
             }
           }
@@ -1512,7 +1631,7 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
         Ok((tokens, index)) => {
           for tok in tokens.iter() {
             match &tok.kind {
-              TokenKind::Text(t) => (),
+              TokenKind::Text(_t) => (),
               other => return Err(format!("Italliciesed text '~..~' only supports string objects however {} was found", token_kind_to_string(&other))),
             }
           }
@@ -1531,6 +1650,7 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
   }
 )}
 
+#[allow(dead_code)]
 fn parse_pipe(program: &Program, pos: usize) -> Result<(ParseNode, usize), String> {
   match program.get_scope(pos, TokenKind::Pipe) {
     Ok((tokens, index)) => {
@@ -1544,6 +1664,7 @@ fn parse_pipe(program: &Program, pos: usize) -> Result<(ParseNode, usize), Strin
   }
 }
 
+#[allow(dead_code)]
 fn parse_inventory_modification(program: &Program, pos: usize) -> Result<(ParseNode, usize), String> {
   if program.tokens[pos].kind != TokenKind::Plus && program.tokens[pos].kind != TokenKind::Minus {
     return Err(format!("ICE: Starting parse_inventory_modification on wrong token, found '{}' instead", program.tokens[pos].to_string()));
@@ -1580,6 +1701,7 @@ fn parse_inventory_modification(program: &Program, pos: usize) -> Result<(ParseN
   Ok((ParseNode::new(Expr::Modify(modification)), new_pos+1))
 }
 
+#[allow(dead_code)]
 fn parse_caret(program: &Program, pos: usize) -> Result<(ParseNode, usize), String> {
   if program.tokens[pos].kind != TokenKind::Caret {
     return Err(format!("ICE: Starting parse_carrot on wrong token, found '{}' instead", program.tokens[pos].to_string()));
@@ -1588,7 +1710,7 @@ fn parse_caret(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
   match program.get_scope(pos, TokenKind::Caret) {
     Ok((tokens, index)) => {
       if tokens.len() == 0 {
-        return Err(format!("Unexpected symbols found inside of '|...|', found: {}", tokens.into_iter().map(|t| -> String { t.to_string() }).collect::<String>()))
+        return Err(format!("Unexpected symbols found inside of '^...^', found: {}", tokens.into_iter().map(|t| -> String { t.to_string() }).collect::<String>()))
       } else {
         match program.tokens[pos+1].kind {
           TokenKind::Plus | TokenKind::Minus => {
@@ -1605,7 +1727,6 @@ fn parse_caret(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
           },
           _ => return Err(format!("Unexpected token '{}' inside of ^...^ expression", program.tokens[pos+1].to_string()))
         }
-        return Ok((ParseNode::new(Expr::Break), index))
       }
     },
     Err(msg) => return Err(msg),
@@ -1685,7 +1806,7 @@ fn parse_section(program: &Program, pos: usize, token: String) -> Result<(ParseN
           Ok((node, i)) => {
             new_pos = i;
             match &node.value {
-              Expr::Require(gameItem) => gameItem.clone(),
+              Expr::Require(game_item) => game_item.clone(),
               _ => return Err(format!("ICE: Got {} when a Require Expression was expected", expr_to_string(&node.value))),
             }
           },
@@ -1693,7 +1814,7 @@ fn parse_section(program: &Program, pos: usize, token: String) -> Result<(ParseN
         };
         requirements.push(item);
       },
-      other => return Err(format!("Unexpected token '{}' found in parameter requirements", program.tokens[new_pos].to_string())),
+      _ => return Err(format!("Unexpected token '{}' found in parameter requirements", program.tokens[new_pos].to_string())),
     }
   }
   let scope_start = match program.find_next_token(TokenKind::OpenCurlyBrace, new_pos) {
