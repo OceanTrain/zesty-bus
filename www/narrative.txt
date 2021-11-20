@@ -823,7 +823,7 @@ The breaker requires a password to be unlocked:
 USE [breaker] &kitchen_mir& &4ace9ketchup3judd& {
 You flip the now unlocked breaker. 
 |BREAK|
-*breaker_and_light_ON.mp3*
+*sounds/SFX/breaker_and_light_ON.mp3*
 You hear the sound of lights turning on in the distance, but the light in the kitchen don't change.
 ^+++breaker1^
 }

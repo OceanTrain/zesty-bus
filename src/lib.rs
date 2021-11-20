@@ -1,24 +1,25 @@
 extern crate wasm_bindgen;
 extern crate cfg_if;
 
+use std::cmp;
 use std::path::Path;
 use std::fs::File;
 use std::io::prelude::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::{thread, time};
-//use cfg_if::cfg_if;
+use cfg_if::cfg_if;
 use wasm_bindgen::prelude::*;
 
-//cfg_if! {
-//    // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
-//    // allocator.
-//    if #[cfg(feature = "wee_alloc")] {
-//        extern crate wee_alloc;
-//        #[global_allocator]
-//        static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-//    }
-//}
+cfg_if! {
+    // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
+    // allocator.
+    if #[cfg(feature = "wee_alloc")] {
+        extern crate wee_alloc;
+        #[global_allocator]
+        static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+    }
+}
 
 // A collection of utility functions
 mod util {
@@ -38,7 +39,7 @@ mod util {
   
   pub fn repeat<T>(times: usize, item: T) -> DisplayRepeat<T> {
       DisplayRepeat(times, item)
-  }
+  }  
 }
 
 // Base type created by the lexer to seperate the program
@@ -215,6 +216,14 @@ fn match_token_kind(kind_a: &TokenKind, kind_b: &TokenKind) -> bool {
   }
 }
 
+fn tokens_to_string(tokens: &Vec<Token>) -> String {
+  tokens.into_iter().map(|t| -> String { t.to_string() }).collect::<String>()
+}
+
+fn path_exists(path: &String) -> bool {
+  Path::new(path).exists()
+}
+
 #[wasm_bindgen]
 #[derive(Clone)]
 pub struct Inventory {
@@ -240,6 +249,7 @@ impl Inventory {
     };
     let global = self.global.iter().fold(String::from("Global: ["), |a, b| a + " " + b) + " ]";
 
+    //format!("{}\n{}\n{}\n", personal, room, global)
     format!("{}\n{}\n{}\n", personal, room, global)
   }
 
@@ -360,6 +370,20 @@ impl Inventory {
       InventoryAction::Check => panic!("ICE: Attempting to modify a check item '{}'", item.name.to_string()),
     }
   }
+
+  fn rooms_eq(&self, other: &Inventory) -> bool {
+    self.room.len() == other.room.len() 
+      && self.room.keys().all(|k| other.room.contains_key(k))
+      && self.room.keys().all(
+           |k| self.room.get(k).expect("ICE: Unreachable") == other.room.get(k).expect("ICE: Unreachable")
+         )
+  }
+
+  pub fn eq(&self, other: &Inventory) -> bool {
+    self.personal == other.personal
+      && self.global == other.global
+      && self.rooms_eq(other) 
+  }
 }
 
 #[wasm_bindgen]
@@ -405,6 +429,12 @@ impl GameState {
 
   pub fn set_room_index(&mut self, index: usize) {
     self.current_room_index = index;
+  }
+
+  pub fn eq(&self, other: &GameState) -> bool {
+    self.current_room_index == other.current_room_index
+      && self.current_room_name == other.current_room_name
+      && self.inventory.eq(&other.inventory)
   }
 }
 
@@ -468,16 +498,6 @@ impl Game {
         Expr::Room(game_room) => { panic!("Discovered Room '{}' inside of Room '{}'", game_room.name.to_string(), state.get_room_name()); },
         Expr::Goto(token) => {
           output.push_str(&format!("    \"[[{}]]\",\n", token.to_string()));
-          //let new_room_name = token.to_string();
-          //match find_room(&rooms, &new_room_name, &inventory) {
-          //  Ok((r, a)) => {
-          //    room = r;
-          //    actions = a;
-          //  },
-          //  Err(msg) => return Err(msg),
-          //};
-          //skip_actions = true;
-          //break;
         },
         Expr::Text(game_text) => {
           output.push_str(&format!("    \"{}\",\n", format!("{} ", (&game_text.text).into_iter().map(|t| -> String { t.to_string() }).collect::<String>())));
@@ -545,7 +565,6 @@ impl Game {
         Expr::Delay(token) => { output.push_str(&format!("|{}|\n", token.to_string())); },  // TODO: actually read delay.
         Expr::Room(game_room) => { panic!("Discovered Room '{}' inside of Room '{}'", game_room.name.to_string(), new_state.get_room_name()); },
         Expr::Goto(token) => {
-          //output.push_str(&format!("[[{}]]\n", token.to_string()));
           let new_room_name = token.to_string();
           match self.find_room(&new_room_name, &state) {
             Ok((r, _a)) => {
@@ -553,8 +572,6 @@ impl Game {
             },
             Err(msg) => return GameResult::new(format!("Error: {}", msg), new_state),
           };
-          //skip_actions = true;
-          //break;
         },
         Expr::Text(game_text) => {
           if i+1 < scope.len() {
@@ -581,6 +598,41 @@ impl Game {
 
   pub fn get_current_room(&self, state: &GameState) -> GameRoom {
     self.rooms.get(state.get_room_name()).unwrap().0[state.get_room_index()].clone()
+  }
+
+  fn _run_room(&self, state: &GameState) -> (GameState, bool, bool) {
+    let mut room_change = false;
+    let mut inventory_change = false;
+    let mut new_state = state.clone();
+    let mut inventory = new_state.get_inventory().clone();
+    let room = match self.find_room(&state.get_room_name(), &state) {
+      Ok((r, _a)) => r,
+      Err(msg) => panic!("{}", msg),
+    };
+    for i in 0..room.scope.len() {
+      match &room.scope[i].value {
+        Expr::Room(game_room) => { panic!("Discovered Room '{}' inside of Room '{}'", game_room.name.to_string(), new_state.get_room_name()); },
+        Expr::Goto(token) => {
+          let new_room_name = token.to_string();
+          match self.find_room(&new_room_name, &state) {
+            Ok((r, _a)) => {
+              new_state.set_room_name(r.name.to_string());
+              room_change = true;
+            },
+            Err(msg) => panic!("Error: {}", msg),
+          };
+        },
+        Expr::Action(game_action) => { panic!("Discovered Action '{} |{}|' inside of Room '{}'", game_action.action.to_string(), game_action.name.to_string(), new_state.get_room_name()); },
+        Expr::Require(game_item) => { panic!("Discovered 'Require({})', inside of Room '{}'", game_item.name.to_string(), new_state.get_room_name()); },
+        Expr::Modify(game_item) => { 
+          inventory = inventory.modify(&game_item, &new_state.get_room_name()); 
+          inventory_change = true;
+        },
+        _ => (),
+      }
+    }
+    new_state.set_inventory(inventory);
+    (new_state, room_change, inventory_change)
   }
 }
 
@@ -845,12 +897,53 @@ impl Program {
       false
     }
   }
+
+  // Formats a string in the form of an error.
+  pub fn get_error_msg(&self, error_type: &String, start_index: usize, end_index: usize) -> String {
+    let (start_row, start_col) = self.get_location(start_index);
+    let (end_row, end_col) = self.get_location(end_index);
+    assert!(start_row == end_row, "Multi-line error lines are not supported");
+    let start_of_line = match self.find_prev('\n', start_index) {
+      Some(i) => i+1,
+      None => 0,
+    };
+    let end_of_line = match self.find_next('\n', start_index) {
+      Some(i) => i,
+      None => self.text.len(),
+    };
+    let line_size = 80;
+    let shift_amount = if end_col >= line_size {
+      if end_of_line - start_col >= line_size {
+        // In the center of the line.
+        ((end_col + start_col) / 2) - (line_size / 2)
+      } else {
+        // At end of line.
+        end_of_line - line_size
+      }
+    } else {
+      // At the start of the line.
+      0
+    };
+    let buffer = util::repeat(((start_row+1) as f64).log10().ceil() as usize + 1, ' ');
+    let start = start_of_line + shift_amount;
+    let end = cmp::min(start+line_size, end_of_line);
+    let skip_size = 3;
+    let skip_start = if shift_amount == 0 { 0 } else { skip_size };
+    let skip_end = if end_of_line - start > line_size { skip_size } else { 0 };
+    let line = self.substr(start + skip_start, end - skip_end);
+    let highlight = format!("{}{}", util::repeat(start_col - shift_amount, ' '), util::repeat(end_index-start_index, '^'));
+    let msg = format!("{}\n    --> {}:{}:{}\n{}|\n{} | {}{}{}\n{}| {}", 
+                      error_type, self.filename, start_row+1, start_col+1, 
+                      buffer, start_row+1, util::repeat(skip_start, '.'),
+                      line, util::repeat(skip_end, '.'), buffer, highlight);
+    msg
+  }
 }
 
 pub fn run() {
   let root_path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-  let src_path = root_path.join("src");
-  let narrative_path = src_path.join("narrative.txt");
+  let www_path = root_path.join("www");
+  let narrative_path = www_path.join("narrative.txt");
   let mut program = read_program(&narrative_path);
   match lex(&program) {
     Ok(tok) => program.tokens = tok,
@@ -1267,18 +1360,20 @@ fn lex(program: &Program) -> Result<Vec<Token>, String> {
         }
       },
       other => {
-        let (row, col) = program.get_location(index);
-        let sol = match program.find_prev('\n', index) {
-          Some(i) => i,
-          None => 0,
-        };
-        let eol = match program.find_next('\n', index) {
-          Some(i) => i,
-          None => program.text.len(),
-        };
-        let line = program.substr(sol, eol);
-        let highlight = format!("{:<1$}^", " ", col);
-        let msg = format!("Unknown symbol \'{}\' (ascii: {}) found at {}:{}:{}\n{}\n{}", other, other as u32, program.filename, row+1, col+1, line, highlight); 
+        //let (row, col) = program.get_location(index);
+        //let sol = match program.find_prev('\n', index) {
+        //  Some(i) => i,
+        //  None => 0,
+        //};
+        //let eol = match program.find_next('\n', index) {
+        //  Some(i) => i,
+        //  None => program.text.len(),
+        //};
+        //let line = program.substr(sol, eol);
+        //let highlight = format!("{:<1$}^", " ", col);
+        //let msg = format!("Unknown symbol \'{}\' (ascii: {}) found at {}:{}:{}\n{}\n{}", other, other as u32, program.filename, row+1, col+1, line, highlight); 
+        let error_type = format!("Unknown symbol \'{}\' (ascii: {})", other, other as u32);
+        let msg = program.get_error_msg(&error_type, index, index+1);
         return Err(msg);
       },
     }
@@ -1338,11 +1433,22 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
       match program.get_scope(i, TokenKind::Ampersand) {
         Ok((tokens, index)) => {
           if tokens.len() != 1 {
-            return Err(format!("Inventory requirements must be in the format '&var&', but found '&{}&' instead", tokens.into_iter().map(|t| -> String { t.to_string() }).collect::<String>()))
+            let error_type = format!("Inventory requirements must be in the format '&var&', but found '&{}&' instead", tokens_to_string(&tokens));
+            return Err(program.get_error_msg(&error_type, program.tokens[i].index, program.tokens[index-1].index+1));
           }
           let var = match &tokens[0].kind {
-            TokenKind::Text(_t) => tokens[0].clone(),
-            _ => return Err("Incorect type in iventory requirement, must be in the format '&var&'".to_string()),
+            TokenKind::Text(t) => {
+              if t.split(' ').collect::<Vec<_>>().len() > 1 {
+                let error_type = String::from("Inventory requirements must be in the format '&var&'");
+                return Err(program.get_error_msg(&error_type, program.tokens[i].index, program.tokens[index-1].index+1));
+              } else {
+                tokens[0].clone()
+              }
+            },
+            _ => {
+              let error_type = String::from("Incorrect type in inventory requirements must be in the format '&var&'");
+              return Err(program.get_error_msg(&error_type, program.tokens[i].index, program.tokens[index-1].index+1));
+            },
           };
           // TODO Check if correct
           let inventory = InventoryKind::Room;
@@ -1362,18 +1468,25 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
       match program.get_scope(i, TokenKind::Asterisk) {
         Ok((tokens, index)) => {
           if tokens.len() != 1 {
-            return Err("Sound effect must be in the format '*path/to/audio*'".to_string())
+            let error_type = String::from("Sound effect must be in the format '*path/to/audio*'");
+            return Err(program.get_error_msg(&error_type, program.tokens[i].index, program.tokens[index-1].index+1));
           }
-          if let TokenKind::Text(_t) = &tokens[0].kind {
+          if let TokenKind::Text(t) = &tokens[0].kind {
             let path = tokens[0].clone();
-            // TODO Handle music path somehow
             let music = GameAudio {
               path: path,
               sound_effect: true,
             };
+            // Make sure the path exists at compile time.
+            let relative_path = format!("www/{}", t);
+            if !path_exists(&relative_path) {
+              let error_type = String::from("Sound effect does not exist");
+              return Err(program.get_error_msg(&error_type, program.tokens[i].index, program.tokens[index-1].index+1));
+            }
             return Ok((ParseNode::new(Expr::Audio(music)), index))
           } else {
-            return Err("Incorrect type in play music action, must be in the format '*path/to/audio*'".to_string())
+            let error_type = String::from("Incorrect type in play music action, must be in the format '*path/to/audio*'");
+            return Err(program.get_error_msg(&error_type, program.tokens[i].index, program.tokens[index-1].index+1));
           }
         },
         Err(msg) => Err(msg),
@@ -1384,7 +1497,8 @@ fn parse_token(program: &Program, pos: usize) -> Result<(ParseNode, usize), Stri
       match program.get_scope(i, TokenKind::At) {
         Ok((tokens, index)) => {
           if tokens.len() == 0 {
-            return Err("Colored text must be in the format '@xxxxxx ..@' where xxxxxx is a 24 bit hex number of the color".to_string())
+            let error_type = String::from("Colored text must be in the format '@xxxxxx ..@' where xxxxxx is a 24 bit hex number of the color");
+            return Err(program.get_error_msg(&error_type, program.tokens[i].index, program.tokens[index-1].index+1));
           } 
           // TODO: Check color
           let text_tokens = &tokens[1..];
