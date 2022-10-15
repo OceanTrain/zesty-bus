@@ -1,6 +1,9 @@
 extern crate wasm_bindgen;
 extern crate cfg_if;
 
+mod util;
+mod token;
+
 use std::cmp;
 use std::path::Path;
 use std::fs::File;
@@ -11,6 +14,9 @@ use std::{thread, time};
 use cfg_if::cfg_if;
 use wasm_bindgen::prelude::*;
 
+use token::Token;
+use token::TokenKind;
+
 cfg_if! {
     // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
     // allocator.
@@ -19,55 +25,6 @@ cfg_if! {
         #[global_allocator]
         static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
     }
-}
-
-// A collection of utility functions
-mod util {
-  use std::fmt::{self, Display};
-
-  #[derive(Clone, Copy)]
-  pub struct DisplayRepeat<T>(usize, T);
-  
-  impl<T: Display> Display for DisplayRepeat<T> {
-      fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-          for _ in 0..self.0 {
-              self.1.fmt(f)?;
-          }
-          Ok(())
-      }
-  }
-  
-  pub fn repeat<T>(times: usize, item: T) -> DisplayRepeat<T> {
-      DisplayRepeat(times, item)
-  }  
-}
-
-// Base type created by the lexer to seperate the program
-#[derive(Debug, Clone, PartialEq)]
-pub enum TokenKind {
-  Text(String),
-  Keyword(String),
-  Ampersand,
-  Asterisk,
-  At, 
-  Caret, 
-  CloseCurlyBrace,
-  CloseParen, 
-  CloseSquareBracket, 
-  Dollar,
-  GreaterThan,
-  LessThan,
-  Minus, 
-  OpenCurlyBrace,
-  OpenParen, 
-  OpenSquareBracket, 
-  Percent,
-  Pipe,
-  Plus,
-  Pound,
-  Semicolon,
-  Tilde,
-  Newline,
 }
 
 #[derive(Debug, Clone)]
@@ -140,13 +97,6 @@ pub enum Expr {
   Action(GameAction),
   Require(GameItem),
   Modify(GameItem),
-}
-
-// Contains the type of token as well as its original position in the program
-#[derive(Debug, Clone)]
-pub struct Token {
-  kind: TokenKind,
-  index: usize,
 }
 
 // The AST node
