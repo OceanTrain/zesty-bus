@@ -1222,7 +1222,6 @@ EXAMINE [room] &violet& $flashlight$ {
 The furnishings of the room are of fine quality but have strange patterns carved into them. The room would otherwise look quite ordinary if not for the crystals and pieces of coloured glass littering almost every surface. In the corner sits a large chest, and on the bedside table sits a #journal#.
 } 
 
-
 GO [south] &violet& {
 [[vip_women]]
 } 
