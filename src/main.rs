@@ -1,5 +1,6 @@
-mod lib;
+mod parser;
+mod simulator;
 
 fn main() {
-  lib::run();
+  simulator::run();
 }

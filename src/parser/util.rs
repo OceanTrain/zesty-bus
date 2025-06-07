@@ -1,5 +1,6 @@
-// A collection of utility functions
 use std::fmt::{self, Display};
+use std::path::Path;
+
 
 #[derive(Clone, Copy)]
 pub struct DisplayRepeat<T>(usize, T);
@@ -17,4 +18,6 @@ pub fn repeat<T>(times: usize, item: T) -> DisplayRepeat<T> {
     DisplayRepeat(times, item)
 }  
 
-
+pub fn path_exists(path: &String) -> bool {
+  Path::new(path).exists()
+}

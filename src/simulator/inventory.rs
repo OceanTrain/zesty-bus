@@ -1,3 +1,11 @@
+use std::collections::HashMap;
+use std::collections::HashSet;
+use wasm_bindgen::prelude::*;
+
+use crate::parser::lex::GameItem;
+use crate::parser::lex::InventoryAction;
+use crate::parser::lex::InventoryKind;
+
 #[wasm_bindgen]
 #[derive(Clone)]
 pub struct Inventory {
@@ -159,3 +167,5 @@ impl Inventory {
       && self.rooms_eq(other) 
   }
 }
+
+
