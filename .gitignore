@@ -5,3 +5,4 @@ package-lock.json
 *.bak
 .sync-conflict*
 Cargo.lock
+/.idea
