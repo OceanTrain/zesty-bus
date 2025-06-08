@@ -104,7 +104,7 @@ fn find_action(actions: &Vec<GameAction>, room_name: &String, action_type: Strin
 
 fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Result<bool, String> {
   let mut inventory = Inventory::new();
-  let current_room = String::from("init");
+  let mut current_room = String::from("init");
   let (mut room, mut actions) = match find_room(&rooms, &current_room, &inventory) {
     Ok((room, actions)) => (room, actions),
     Err(msg) => return Err(msg),
@@ -130,6 +130,7 @@ fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Resu
           let new_room_name = token.to_string();
           match find_room(&rooms, &new_room_name, &inventory) {
             Ok((r, a)) => {
+              current_room = r.name.to_string();
               room = r;
               actions = a;
             },
@@ -205,6 +206,7 @@ fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Resu
             let new_room_name = token.to_string();
             match find_room(&rooms, &new_room_name, &inventory) {
               Ok((r, a)) => {
+                current_room = r.name.to_string();
                 room = r;
                 actions = a;
               },
@@ -219,7 +221,7 @@ fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Resu
           Expr::Audio(_game_audio) => { continue; },
           Expr::Action(game_action) => { return Err(format!("Discovered Action '{} |{}|' inside of Action '{} |{}|'", game_action.action.to_string(), game_action.name.to_string(), action.action.to_string(), action.name.to_string())); },
           Expr::Require(game_item) => { return Err(format!("Discovered 'Require({})', inside of Action '{} |{}|'", game_item.name.to_string(), action.action.to_string(), action.name.to_string())); },
-          Expr::Modify(game_item) => { inventory.modify(&game_item, &current_room); },
+          Expr::Modify(game_item) => { inventory = inventory.modify(&game_item, &current_room); },
         }
       }
     }
