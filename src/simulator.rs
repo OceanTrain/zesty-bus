@@ -172,6 +172,9 @@ fn start_game(rooms: &HashMap<String, (Vec<GameRoom>, Vec<GameAction>)>) -> Resu
             continue;
           } else if split.len() == 1 {
             argument = split[0].to_lowercase();
+            if argument.to_lowercase() == "help" {
+              command = "HELP".to_string();
+            }
             break;
           } else {
             command = split[0].to_uppercase();
